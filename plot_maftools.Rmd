@@ -4,7 +4,7 @@ params:
     result_fn: "results/fea333b5-78e0-43c8-bf76-4c78dd3fac92.sig_genes.txt"
     id: "fea333b5-78e0-43c8-bf76-4c78dd3fac92"
 title: "mTOR and pathway, maftools analysis"
-subtitle: "preliminary exploration"
+subtitle: "`r params$id`"
 date: "Figures last updated: `r Sys.time()`"
 output: html_document
 ---
@@ -21,9 +21,21 @@ knitr::opts_chunk$set(echo = F)
 
 ```{r, maftools}
 
-maf_plots <- function(id, m){
+# pathway lists
+gene <- list(c("EGFR", "FGFR1", "ERBB2", "ERBB4", "ROS1", "ERBB3", "MET", "ALK", "FLT1", "PDGFRA", "FLT3", "FLT4", "RET", "FGFR2", "FGFR3"),
+			 c("PI3K", "PIK3CA", "PTEN", "AKT3", "MTOR", "AKT2", "TSC2", "TSC1", "AKT2"),
+			 c("BMT2", "CASTOR1", "CASTOR2"),
+			 c("DEPDC5", "NPRL2", "NPRL3"),
+			 c("MIOS", "SEH1L", "SEC13", "WDR24", "WDR59", "SLC38A9"),
+			 c("C12ORF66", "ITFG2", "KPTN", "SZT2", "SESN2")
+		    )
+pw_name <- c("RTKS", "PI3K signalling", "SAMTOR", "GATOR1", "GATOR2", "KICSTOR")
+pathways <- data.frame(unlist(gene), rep(pw_name, times = sapply(gene, length)))
 
-	maf_data <- read.maf(m)
+# read data
+maf_data <- read.maf(params$maf_fn)
+
+maf_plots <- function(id, maf_data){
 
 	# plot maf summary
 	plotmafSummary(maf = maf_data, rmOutlier = T, addStat = 'median', dashboard = TRUE, titvRaw = FALSE)
@@ -59,20 +71,22 @@ onco_p_plot <- function(id, m, r, pathways){
 
 ```
 
-```{r, plotting, warning = F, results = 'hide', fig.align = 'center'}
+```{r, plotting, message = F, warning = F, results = 'hide', fig.align = 'center'}
 
-maf_plots(params$id, params$maf_fn)
+# plot maf summary
+try(plotmafSummary(maf = maf_data, rmOutlier = T, addStat = 'median', dashboard = TRUE, titvRaw = FALSE))
 
-# pathway lists
-gene <- list(c("EGFR", "FGFR1", "ERBB2", "ERBB4", "ROS1", "ERBB3", "MET", "ALK", "FLT1", "PDGFRA", "FLT3", "FLT4", "RET", "FGFR2", "FGFR3"),
-			 c("PI3K", "PIK3CA", "PTEN", "AKT3", "MTOR", "AKT2", "TSC2", "TSC1", "AKT2"),
-			 c("BMT2", "CASTOR1", "CASTOR2"),
-			 c("DEPDC5", "NPRL2", "NPRL3"),
-			 c("MIOS", "SEH1L", "SEC13", "WDR24", "WDR59", "SLC38A9"),
-			 c("C12ORF66", "ITFG2", "KPTN", "SZT2", "SESN2")
-		    )
-pw_name <- c("RTKS", "PI3K signalling", "SAMTOR", "GATOR1", "GATOR2", "KICSTOR")
-pathways <- data.frame(unlist(gene), rep(pw_name, times = sapply(gene, length)))
+# plot mtor lollipop
+try(lollipopPlot(maf = maf_data, gene = 'MTOR', showMutationRate = TRUE))
+
+# plot oncogenic pathways
+try(OncogenicPathways(maf = maf_data))
+try(PlotOncogenicPathways(maf = maf_data, pathways = "RTK-RAS"))
+try(PlotOncogenicPathways(maf = maf_data, pathways = "PI3K"))
+
+# plot oncodriveclust
+sig <- invisible(oncodrive(maf = maf_data, minMut = 5, pvalMethod = 'zscore'))
+try(plotOncodrive(res = sig, fdrCutOff = 0.1, useFraction = TRUE))
 
 # default oncoplot
 oncoplot(maf = maf_data, gene_mar = 8, fontSize = 0.6)

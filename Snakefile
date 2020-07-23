@@ -8,7 +8,11 @@ maf_dict = {x: glob.glob("data/{}/*.maf".format(x))[0] for x in jobs}
 rule all:
 	input: expand("results/{job}.sig_genes.txt", job = jobs)
 
-rule run_mutsig:
+#rule knit_plots:
+#	input: expand("results/{job}.sig_genes.txt", job = jobs)
+#	output: "summary.html"
+
+rule run_mutsigcv:
 	input: lambda wildcards: maf_dict[wildcards.job]
 	output: multiext("results/{job}", ".sig_genes.txt", ".mutcateg_discovery.txt", ".categs.txt", ".coverage.txt", ".mutations.txt")
 	params: "results/{job}"

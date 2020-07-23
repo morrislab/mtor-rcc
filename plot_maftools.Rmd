@@ -1,0 +1,84 @@
+---
+params:
+    maf_fn: "data/fea333b5-78e0-43c8-bf76-4c78dd3fac92/TCGA.PAAD.mutect.fea333b5-78e0-43c8-bf76-4c78dd3fac92.DR-10.0.somatic.maf" 
+    result_fn: "results/fea333b5-78e0-43c8-bf76-4c78dd3fac92.sig_genes.txt"
+    id: "fea333b5-78e0-43c8-bf76-4c78dd3fac92"
+title: "mTOR and pathway, maftools analysis"
+subtitle: "preliminary exploration"
+date: "Figures last updated: `r Sys.time()`"
+output: html_document
+---
+
+
+***
+
+```{r, setup, echo=F, include = F}
+library("maftools")
+library(BSgenome.Hsapiens.UCSC.hg19, quietly = TRUE)
+knitr::opts_chunk$set(echo = F)
+```
+
+
+```{r, maftools}
+
+maf_plots <- function(id, m){
+
+	maf_data <- read.maf(m)
+
+	# plot maf summary
+	plotmafSummary(maf = maf_data, rmOutlier = T, addStat = 'median', dashboard = TRUE, titvRaw = FALSE)
+	
+	# plot mtor lollipop
+	lollipopPlot(maf = maf_data, gene = 'MTOR', showMutationRate = TRUE)
+	
+	# plot oncogenic pathways
+	OncogenicPathways(maf = maf_data)
+	PlotOncogenicPathways(maf = maf_data, pathways = "RTK-RAS")
+	PlotOncogenicPathways(maf = maf_data, pathways = "PI3K")
+	
+	# plot signature enrichment analysis
+	# tnm will need to be constructed
+	# tnm = trinucleotideMatrix(maf = maf_data, prefix = 'chr', add = TRUE, ref_genome = "BSgenome.Hsapiens.UCSC.hg19")
+	
+	# plot oncodriveclust
+	sig <- invisible(oncodrive(maf = maf_data, minMut = 5, pvalMethod = 'zscore'))
+	plotOncodrive(res = sig, fdrCutOff = 0.1, useFraction = TRUE)
+	
+	# prepare for mutsigCV
+}
+
+onco_p_plot <- function(id, m, r, pathways){
+
+	maf_data <- read.maf(m)
+	result_data <- read.delim(r, stringsAsFactors=F)
+
+	#ord <- match(maf_data@data$Hugo_Symbol, result_data$gene, nomatch=0)
+	rb_data <- result_data[, c("gene", "p")]
+	oncoplot(maf = maf_data, pathways = pathways, rightBarData = rb_data, rightBarLims = c(0, 0.1))
+}
+
+```
+
+```{r, plotting, warning = F, results = 'hide', fig.align = 'center'}
+
+maf_plots(params$id, params$maf_fn)
+
+# pathway lists
+gene <- list(c("EGFR", "FGFR1", "ERBB2", "ERBB4", "ROS1", "ERBB3", "MET", "ALK", "FLT1", "PDGFRA", "FLT3", "FLT4", "RET", "FGFR2", "FGFR3"),
+			 c("PI3K", "PIK3CA", "PTEN", "AKT3", "MTOR", "AKT2", "TSC2", "TSC1", "AKT2"),
+			 c("BMT2", "CASTOR1", "CASTOR2"),
+			 c("DEPDC5", "NPRL2", "NPRL3"),
+			 c("MIOS", "SEH1L", "SEC13", "WDR24", "WDR59", "SLC38A9"),
+			 c("C12ORF66", "ITFG2", "KPTN", "SZT2", "SESN2")
+		    )
+pw_name <- c("RTKS", "PI3K signalling", "SAMTOR", "GATOR1", "GATOR2", "KICSTOR")
+pathways <- data.frame(unlist(gene), rep(pw_name, times = sapply(gene, length)))
+
+# default oncoplot
+oncoplot(maf = maf_data, gene_mar = 8, fontSize = 0.6)
+
+# make oncoplot with p-value barplot
+onco_p_plot(params$id, params$maf_fn, params$result_fn, pathways[1:24,])
+onco_p_plot(params$id, params$maf_fn, params$result_fn, pathways[24:41,])
+
+```

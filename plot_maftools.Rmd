@@ -125,7 +125,7 @@ try(plotOncodrive(res = sig, fdrCutOff = 0.1, useFraction = TRUE))
 
 ```{r}
 # default oncoplot
-oncoplot(maf = maf_data, gene_mar = 8, fontSize = 0.6)
+try(oncoplot(maf = maf_data, gene_mar = 8, fontSize = 0.6))
 ```
 
 ### Curated pathways 
@@ -134,7 +134,7 @@ P-value determined by MutSigCV
 
 ```{r}
 # make oncoplot with p-value barplot
-onco_p_plot(id, maf_fn, result_fn, pathways[1:pidx,])
-onco_p_plot(id, maf_fn, result_fn, pathways[pidx:dim(pathways)[1],])
+try(onco_p_plot(id, maf_fn, result_fn, pathways[1:pidx,]))
+try(onco_p_plot(id, maf_fn, result_fn, pathways[pidx:dim(pathways)[1],]))
 
 ```

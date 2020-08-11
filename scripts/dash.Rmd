@@ -104,7 +104,9 @@ p <- p %>%
                line = list(dash = "dash", width = 0.5, color = "black")) %>%
      add_trace(x = ~cancer_type, y = 0.05, type = "scatter", mode = "lines", name = "**",
                line = list(dash = "dash", width = 0.5, color = "black")) %>%
-     layout(yaxis = list(title = "p-value"), xaxis = list(type = "category", title = ""))
+     layout(yaxis = list(title = "p-value"), xaxis = list(type = "category", title = ""),
+            margin = list(b = 160, t = 70)) %>%
+     plotly::config(toImageButtonOptions = list(format = "png", scale = 2))
 #htmlwidgets::saveWidget(p, file = "img.html")
 
 p
@@ -173,6 +175,7 @@ for (c in names(mafs)){
 
 slickR::slickR(p, height = 600) + slickR::settings(dots = TRUE)
 ```
+
 
 ### Signatures of Vascularization
 

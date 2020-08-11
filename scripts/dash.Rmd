@@ -1,0 +1,180 @@
+---
+title: "mTOR in TCGA studies"
+subtitle: "preliminary exploration"
+date: "Figures last updated: `r Sys.time()`"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    source_code: embed
+    theme: lumen
+params:
+  maf_dir: "../GDCdata/MC3"
+  res_dir: "../results/MC3"
+---
+
+```{r global, include=FALSE}
+library(maftools)
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(kableExtra)
+knitr::opts_chunk$set(echo = F, warning = F, message = F, fig.align = 'center', out.width = '100%')
+```
+
+```{css, echo=FALSE}
+
+.slick-arrow.slick-prev {
+  left: 100px;
+  z-index: 1;
+}
+.slick-arrow.slick-next {
+  right: 100px;
+}
+
+```
+
+Inputs {.sidebar}
+-----------------------------------------------------------------------
+### Analysis info
+
+Ran [MutSigCV](https://software.broadinstitute.org/cancer/cga/mutsig) to get p-values. These indicate if the mutation frequency of a gene is significant, accounting for the background mutation rate of the patient, the gene expression level, gene replication timing, and chromatin state.
+
+Data retrieved from [GDC data portal](https://portal.gdc.cancer.gov/). Data displayed is from MC3 project, and aligned to hg19. MAF files an oncoplots were prepared using [maftools](https://www.bioconductor.org/packages/release/bioc/html/maftools.html). 
+
+*** 
+
+**Gene Significance**: MutSigCV p-values are plotted for each available TCGA cancer type, for a select set of genes. 
+
+**Oncoplots**: show the frequency and nature of mutations in the patients of a given cancer type. Gene sets are boxed in grey. Barplot on right illustrates p-value for a given gene, as determined with MutSigCV. 
+
+**Waterfall plots**: show co-occuring alterations in a pathway for each patient. Blue are oncogenes, red are tumour suppressors. 
+
+Row {.tabset}
+-----------------------------------------------------------------------
+
+### Gene significance
+    
+```{r, manifest, include = F}
+# mafs
+maf_dir <- params$maf_dir
+maf_fns <- list.files(maf_dir, pattern = "*.maf")
+mafs <- sapply(paste0(maf_dir, "/", maf_fns), read.maf)
+names(mafs) <- sapply(mafs, function(x){x@data$project_id[[1]]})
+
+# cancer types
+cancer_names <- read.table("../ref_files/cancer_types.txt", header = T, sep = "\t")
+
+# mutsigCV results
+res_dir <- params$res_dir
+res_fns <- list.files(res_dir, pattern = "*.sig_genes.txt")
+goi <- c("TTN", "ATM", "WNT1", "KRAS", "TP53", "BRCA1", "BRCA2", "AKT1", "AKT2", "AKT3", "TSC1", "TSC2", "EGFR", 
+         "FGFR1", "ERBB2", "ERBB3", "ERBB4", "ROS1", "MET", "ALK", "FLT1", "PDGFRA", "FLT3", "FLT4", "RET", "FGFR2", "FGFR3", "DEPDC5", "NPRL2", "NPRL3", "MIOS", "SEH1L", "SEC13", "WDR24", "WDR59", "SLC38A9", "PIK3CA", "PTEN", "MTOR")
+mutsig_p <- data.frame(row.names = goi)
+
+# set up mutsig dataframe for genes of interest
+for (c in names(mafs)) {
+  ord <- match(c, substr(res_fns, 1, nchar(res_fns)-14))
+  mutsig_res <- read.table(paste0(res_dir, "/", res_fns[ord]), header=T)
+  poi <- mutsig_res[mutsig_res$gene %in% goi, c(1,14)]
+  mutsig_p[[c]] <- poi$p[match(goi, poi$gene)]
+}
+```
+
+```{r sig-genes}
+df <- as.data.frame(t(mutsig_p))
+sampleSizes <- sapply(mafs, function(x){as.numeric(x@summary[ID %in% 'Samples', summary])})
+mutRates <- sapply(mafs, function(x){getGeneSummary(x)[match(goi, getGeneSummary(x)$Hugo_Symbol), MutatedSamples]})
+mutRates <- as.data.frame(apply(mutRates, denom = sampleSizes, FUN = function(x, denom){ x / denom * 100}, MAR = 1))
+colnames(mutRates) <- goi
+df$cancer_type <- cancer_names$brief[match(rownames(df), cancer_names$abbrev)]
+
+p <- plot_ly(data = df, type = 'scatter', mode = 'markers') 
+
+for (g in names(df)) {
+  if(g=='cancer_type'){next}
+  p <- p %>% add_trace(x = ~ cancer_type, y = as.formula(paste0("~`", g, "`")),
+                       name = g, 
+                       text = paste("Somatic mutation rate: ", round(mutRates[[g]], digits = 2) , "%")
+                       #color = mutRates[[g]]
+                      )
+}
+
+p <- p %>% 
+     add_trace(x = ~cancer_type, y = 0.1, type = "scatter", mode = "lines", name = "*",
+               line = list(dash = "dash", width = 0.5, color = "black")) %>%
+     add_trace(x = ~cancer_type, y = 0.05, type = "scatter", mode = "lines", name = "**",
+               line = list(dash = "dash", width = 0.5, color = "black")) %>%
+     layout(yaxis = list(title = "p-value"), xaxis = list(type = "category", title = ""))
+#htmlwidgets::saveWidget(p, file = "img.html")
+
+p
+```
+
+### Oncoplots
+
+```{r, oncoplots}
+# pathway lists
+gene <- list(c("EGFR", "FGFR1", "ERBB2", "ERBB3", "ERBB4", "ROS1", "MET", "ALK", "FLT1", 
+               "PDGFRA", "FLT3", "FLT4", "RET", "FGFR2", "FGFR3"),
+             c("PIK3CA", "PTEN", "AKT3", "MTOR", "AKT2", "TSC2", "TSC1", "AKT1"),
+             c("C7orf60", "GATSL1", "GATSL3"),
+             c("DEPDC5", "NPRL2", "NPRL3"),
+             c("MIOS", "SEH1L", "SEC13", "WDR24", "WDR59", "SLC38A9"),
+             c("C12orf66", "ITFG2", "KPTN", "KIAA0467", "SESN2")
+            )
+pw_name <- c("RTKS pthw", "PI3K pthw", "SAMTOR", "GATOR1", "GATOR2", "KICSTOR")
+pathways <- data.frame(unlist(gene), rep(pw_name, times = sapply(gene, length)))
+pidx <- length(gene[[1]]) + length(gene[[2]]) + 1
+
+
+# make oncoplot with pvalues from mutsigcv
+p <- list()
+for (c in names(mafs)){
+  rbd <- data.frame(gene = rownames(mutsig_p), p = mutsig_p[[c]])
+  svg <- svglite::xmlSVG(
+         code = { oncoplot(maf = mafs[[c]], pathways = pathways, 
+                  rightBarData = rbd, rightBarLims = c(0, 0.1), 
+                  keepGeneOrder = T, gene_mar = 8, titleText = c)},
+         standalone = T)
+  p[[c]] <- svg
+}
+
+slickR::slickR(p, height = 600) + slickR::settings(dots = TRUE, autoplay = TRUE)
+```
+
+### RTK-RAS waterfall plots 
+
+```{r}
+p <- list()
+for (c in names(mafs)){
+  rbd <- data.frame(gene = rownames(mutsig_p), p = mutsig_p[[c]])
+  svg <- svglite::xmlSVG(
+         code = { PlotOncogenicPathways(maf = mafs[[c]], pathways = "RTK-RAS")
+                  title(main = c)},
+         standalone = T)
+  p[[c]] <- svg
+}
+
+slickR::slickR(p, height = 600) + slickR::settings(dots = TRUE)
+```
+
+### PI3K waterfall plots 
+
+
+```{r}
+p <- list()
+for (c in names(mafs)){
+  rbd <- data.frame(gene = rownames(mutsig_p), p = mutsig_p[[c]])
+  svg <- svglite::xmlSVG(
+         code = { try(PlotOncogenicPathways(maf = mafs[[c]], pathways = "PI3K")) },
+         standalone = T)
+  p[[c]] <- svg
+}
+
+slickR::slickR(p, height = 600) + slickR::settings(dots = TRUE)
+```
+
+### Signatures of Vascularization
+
+
+

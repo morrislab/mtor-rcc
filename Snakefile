@@ -1,39 +1,33 @@
 import glob
+import os
 
-with open('joblist.txt') as f:
-	jobs = f.read().splitlines()
+maf_pattern = "GDCdata/MC3/*.mutSig.maf"
+jobs = [os.path.basename(x) for x in glob.glob(maf_pattern)]
+jobs = [x[:-11] for x in jobs]
 
-maf_dict = {x: glob.glob("data/{}/*.maf".format(x))[0] for x in jobs}
 
 rule all:
-	input: "summary/index.html"
+	#input: expand("summary/MC3/{job}.html", job = jobs)	
+	input: "summary/MC3/index.html"
 
-rule knit_summary:
-	input: expand("summary/{job}.html", job = jobs)
-	output: "summary/index.html"
-	log: multiext("logs/all", ".stdout", ".stderr")
+rule knit_dash:
+	input: expand("results/MC3/{job}.sig_genes.txt", job = jobs)
+	output: "summary/MC3/index.html"
+	params: "summary/MC3", "../GDCdata/MC3", "../results/MC3"
 	shell: 
 		"""
-		Rscript -e "rmarkdown::render('summary.Rmd', output_file = '{output}', output_dir = 'summary')" > {log[0]} 2> {log[1]}
-		"""
-
-rule knit_plots:
-	input: "results/{job}.sig_genes.txt"
-	output: "summary/{job}.html"
-	params: "{job}"
-	log: multiext("logs/{job}", ".stdout", ".stderr")
-	shell: 
-		"""
-		Rscript -e "rmarkdown::render('plot_maftools.Rmd', params = list(id = '{params}'), output_file = 'summary/{params}.html', output_dir = 'summary')" > {log[0]} 2> {log[1]}
+		Rscript -e "rmarkdown::render('scripts/dash.Rmd', output_file = '{output}', output_dir = '{params[0]}', params = list(maf_dir = '{params[1]}', res_dir = '{params[2]}'))"
 		"""
 
 rule run_mutsigcv:
-	input: lambda wildcards: maf_dict[wildcards.job]
-	output: multiext("results/{job}", ".sig_genes.txt", ".mutcateg_discovery.txt", ".categs.txt", ".coverage.txt", ".mutations.txt")
-	params: "results/{job}"
+	input: "GDCdata/MC3/{job}.mutSig.maf"
+	output: multiext("results/MC3/{job}", ".sig_genes.txt", ".mutcateg_discovery.txt", ".categs.txt", ".coverage.txt", ".mutations.txt")
+	params: "results/MC3/{job}"
 	log: multiext("logs/{job}", ".stdout", ".stderr")
 	benchmark: "logs/{job}.time"
-	shell: "MutSigCV_1.41/run_MutSigCV.sh /home/cait/Desktop/mtor/v901 {input} exome_full192.coverage.txt gene.covariates.txt {params} mutation_type_dictionary_file.txt chr_files_GDC > {log[0]} 2> {log[1]}"
-
-	
-
+	shell: 
+		"""
+		taskset -c 27,28,29,30 MutSigCV_1.41/run_MutSigCV.sh /home/cait/Desktop/mtor/v901 {input} \
+		ref_files/exome_full192.coverage.txt ref_files/gene.covariates.txt {params} \
+		ref_files/mutation_type_dictionary_file.txt ref_files/chr_files_hg19 > {log[0]} 2> {log[1]}
+		"""

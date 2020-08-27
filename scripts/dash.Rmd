@@ -57,7 +57,7 @@ Row {.tabset}
 ```{r, manifest, include = F}
 # mafs
 maf_dir <- params$maf_dir
-maf_fns <- list.files(maf_dir, pattern = "*.maf")
+maf_fns <- list.files(maf_dir, pattern = "*.maf")[c(11,21)]
 mafs <- sapply(paste0(maf_dir, "/", maf_fns), read.maf)
 names(mafs) <- sapply(mafs, function(x){x@data$project_id[[1]]})
 
@@ -168,7 +168,8 @@ p <- list()
 for (c in names(mafs)){
   rbd <- data.frame(gene = rownames(mutsig_p), p = mutsig_p[[c]])
   svg <- svglite::xmlSVG(
-         code = { try(PlotOncogenicPathways(maf = mafs[[c]], pathways = "PI3K")) },
+         code = { try(PlotOncogenicPathways(maf = mafs[[c]], pathways = "PI3K")
+                  title(main = c)},
          standalone = T)
   p[[c]] <- svg
 }

@@ -8,8 +8,8 @@ output:
     source_code: embed
     theme: lumen
 params:
-  maf_dir: "../GDCdata/MC3"
-  res_dir: "../results/MC3"
+  maf_dir: "../GDCdata/harmonized"
+  res_dir: "../results/harmonized"
 ---
 
 ```{r global, include=FALSE}
@@ -39,7 +39,7 @@ Inputs {.sidebar}
 
 Ran [MutSigCV](https://software.broadinstitute.org/cancer/cga/mutsig) to get p-values. These indicate if the mutation frequency of a gene is significant, accounting for the background mutation rate of the patient, the gene expression level, gene replication timing, and chromatin state.
 
-Data retrieved from [GDC data portal](https://portal.gdc.cancer.gov/). Data displayed is from MC3 project, and aligned to hg19. MAF files an oncoplots were prepared using [maftools](https://www.bioconductor.org/packages/release/bioc/html/maftools.html). 
+Data retrieved from [GDC data portal](https://portal.gdc.cancer.gov/). Data displayed is from harmonized data project, and aligned to hg38. MAF files an oncoplots were prepared using [maftools](https://www.bioconductor.org/packages/release/bioc/html/maftools.html). 
 
 *** 
 
@@ -57,7 +57,7 @@ Row {.tabset}
 ```{r, manifest, include = F}
 # mafs
 maf_dir <- params$maf_dir
-maf_fns <- list.files(maf_dir, pattern = "*.maf")[c(11,21)]
+maf_fns <- list.files(maf_dir, pattern = "*.maf")
 mafs <- sapply(paste0(maf_dir, "/", maf_fns), read.maf)
 names(mafs) <- sapply(mafs, function(x){x@data$project_id[[1]]})
 
@@ -94,7 +94,7 @@ for (g in names(df)) {
   if(g=='cancer_type'){next}
   p <- p %>% add_trace(x = ~ cancer_type, y = as.formula(paste0("~`", g, "`")),
                        name = g, 
-                       text = paste("Somatic mutation rate: ", round(mutRates[[g]], digits = 2) , "%")
+                       text = paste("Cohort mutation frequency: ", round(mutRates[[g]], digits = 2) , "%")
                        #color = mutRates[[g]]
                       )
 }
@@ -168,7 +168,7 @@ p <- list()
 for (c in names(mafs)){
   rbd <- data.frame(gene = rownames(mutsig_p), p = mutsig_p[[c]])
   svg <- svglite::xmlSVG(
-         code = { try(PlotOncogenicPathways(maf = mafs[[c]], pathways = "PI3K")
+         code = { PlotOncogenicPathways(maf = mafs[[c]], pathways = "PI3K")
                   title(main = c)},
          standalone = T)
   p[[c]] <- svg

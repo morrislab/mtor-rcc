@@ -1,43 +1,38 @@
-import glob
 import os
+from glob import glob
 
-maf_pattern = "GDCdata/harmonized/*.mutSig.maf"
-jobs = [os.path.basename(x) for x in glob.glob(maf_pattern)]
-jobs = [x[:-11] for x in jobs]
+sample_set = "harmonized" #"MC3"
 
+data_dir = os.path.join("GDCdata", sample_set)
+results_dir = os.path.join("results", sample_set)
+summary_dir = os.path.join("summary", sample_set)
 
-rule all:
-	#input: expand("summary/harmonized/{job}.html", job = jobs)	
-	input: "summary/harmonized/index.html"
+def get_jobnames(data_dir):
+	maf_location = os.path.join(data_dir, "*.mutSig.maf")
+	return [os.path.basename(x)[:-11] for x in glob(maf_location)]
+
+rule all:	
+	input: os.path.join(summary_dir, "index.html")
 
 rule knit_dash:
-	input: expand("results/harmonized/{job}.sig_genes.txt", job = jobs)
-	output: "summary/harmonized/index.html"
-	params: "summary/harmonized", "../GDCdata/harmonized", "../results/harmonized"
+	#input: expand("results/{set}/{job}.sig_genes.txt", set = sample_sets)
+	input: expand(os.path.join(results_dir, "{job}.sig_genes.txt"), job = get_jobnames(data_dir))
+	output: os.path.join(summary_dir, "index.html")
+	params: summary_dir, os.path.join("..", data_dir), os.path.join("..", results_dir)
 	shell: 
 		"""
 		Rscript -e "rmarkdown::render('scripts/dash.Rmd', output_file = '{output}', output_dir = '{params[0]}', params = list(maf_dir = '{params[1]}', res_dir = '{params[2]}'))"
 		"""
 
-#rule knit_plots:
-#	input: "results_harmonized/{job}.sig_genes.txt"
-#	output: "summary/{job}.html"
-#	params: "{job}"
-#	log: multiext("logs/{job}", ".stdout", ".stderr")
-#	shell: 
-#		"""
-#		Rscript -e "rmarkdown::render('scripts/plot_maftools.Rmd', params = list(id = '{params}'), output_file = 'summary/{params}.html', output_dir = 'summary')" > {log[0]} 2> {log[1]}
-#		"""
-
 rule run_mutsigcv:
-	input: "GDCdata/harmonized/{job}.mutSig.maf"
-	output: multiext("results/harmonized/{job}", ".sig_genes.txt", ".mutcateg_discovery.txt", ".categs.txt", ".coverage.txt", ".mutations.txt")
-	params: "results/harmonized/{job}"
+	input: os.path.join(data_dir, "{job}.mutSig.maf")
+	output: multiext(os.path.join(results_dir, "{job}"), ".sig_genes.txt", ".mutcateg_discovery.txt", ".categs.txt", ".coverage.txt", ".mutations.txt")
+	params: os.path.join(results_dir, "{job}")
 	log: multiext("logs/{job}", ".stdout", ".stderr")
 	benchmark: "logs/{job}.time"
 	shell: 
 		"""
 		taskset -c 27,28,29,30 MutSigCV_1.41/run_MutSigCV.sh /home/cait/Desktop/mtor/v901 {input} \
 		ref_files/exome_full192.coverage.txt ref_files/gene.covariates.txt {params} \
-		ref_files/mutation_type_dictionary_file.txt ref_files/chr_files_GRC38 > {log[0]} 2> {log[1]}
+		ref_files/mutation_type_dictionary_file.txt ref_files/chr_files_hg19 > {log[0]} 2> {log[1]}
 		"""

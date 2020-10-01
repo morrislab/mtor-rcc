@@ -68,7 +68,7 @@ cancer_names <- read.table("../ref_files/cancer_types.txt", header = T, sep = "\
 res_dir <- params$res_dir
 res_fns <- list.files(res_dir, pattern = "*.sig_genes.txt")
 goi <- c("TTN", "ATM", "WNT1", "KRAS", "TP53", "BRCA1", "BRCA2", "AKT1", "AKT2", "AKT3", "TSC1", "TSC2", "EGFR", 
-         "FGFR1", "ERBB2", "ERBB3", "ERBB4", "ROS1", "MET", "ALK", "FLT1", "PDGFRA", "FLT3", "FLT4", "RET", "FGFR2", "FGFR3", "DEPDC5", "NPRL2", "NPRL3", "MIOS", "SEH1L", "SEC13", "WDR24", "WDR59", "SLC38A9", "PIK3CA", "PTEN", "MTOR")
+         "FGFR1", "ERBB2", "ERBB3", "ERBB4", "ROS1", "MET", "ALK", "FLT1", "PDGFRA", "FLT3", "FLT4", "RET", "FGFR2", "FGFR3", "DEPDC5", "NPRL2", "NPRL3", "MIOS", "SEH1L", "SEC13", "WDR24", "WDR59", "SLC38A9", "PIK3CA", "PIK3CB", "PIK3CG", "PIK3CD", "PTEN", "MTOR")
 mutsig_p <- data.frame(row.names = goi)
 
 # set up mutsig dataframe for genes of interest
@@ -118,7 +118,7 @@ p
 # pathway lists
 gene <- list(c("EGFR", "FGFR1", "ERBB2", "ERBB3", "ERBB4", "ROS1", "MET", "ALK", "FLT1", 
                "PDGFRA", "FLT3", "FLT4", "RET", "FGFR2", "FGFR3"),
-             c("PIK3CA", "PTEN", "AKT3", "MTOR", "AKT2", "TSC2", "TSC1", "AKT1"),
+             c("PIK3CA", "PIK3CB", "PIK3CG", "PIK3CD", PTEN", "AKT3", "MTOR", "AKT2", "TSC2", "TSC1", "AKT1"),
              c("C7orf60", "GATSL1", "GATSL3"),
              c("DEPDC5", "NPRL2", "NPRL3"),
              c("MIOS", "SEH1L", "SEC13", "WDR24", "WDR59", "SLC38A9"),

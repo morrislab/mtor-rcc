@@ -10,6 +10,7 @@ output:
 params:
   maf_dir: "../GDCdata/harmonized"
   res_dir: "../results/harmonized"
+  names_tr: "../ref_files/cancer_types.txt"
 ---
 
 ```{r global, include=FALSE}
@@ -39,7 +40,7 @@ Inputs {.sidebar}
 
 Ran [MutSigCV](https://software.broadinstitute.org/cancer/cga/mutsig) to get p-values. These indicate if the mutation frequency of a gene is significant, accounting for the background mutation rate of the patient, the gene expression level, gene replication timing, and chromatin state.
 
-Data retrieved from [GDC data portal](https://portal.gdc.cancer.gov/). Data displayed is from harmonized data project, and aligned to hg38. MAF files an oncoplots were prepared using [maftools](https://www.bioconductor.org/packages/release/bioc/html/maftools.html). 
+Data retrieved from [GDC data portal](https://portal.gdc.cancer.gov/). Data displayed is from MC3 data project, and aligned to hg19. MAF files an oncoplots were prepared using [maftools](https://www.bioconductor.org/packages/release/bioc/html/maftools.html). 
 
 *** 
 
@@ -59,10 +60,10 @@ Row {.tabset}
 maf_dir <- params$maf_dir
 maf_fns <- list.files(maf_dir, pattern = "*.maf")
 mafs <- sapply(paste0(maf_dir, "/", maf_fns), read.maf)
-names(mafs) <- sapply(mafs, function(x){x@data$project_id[[1]]})
+names(mafs) <- sapply(maf_fns, function(x){sub('\\.mutSig\\.maf$', '', x) })
 
 # cancer types
-cancer_names <- read.table("../ref_files/cancer_types.txt", header = T, sep = "\t")
+cancer_names <- read.table(params$names_tr, header = T, sep = "\t")
 
 # mutsigCV results
 res_dir <- params$res_dir
@@ -94,7 +95,7 @@ for (g in names(df)) {
   if(g=='cancer_type'){next}
   p <- p %>% add_trace(x = ~ cancer_type, y = as.formula(paste0("~`", g, "`")),
                        name = g, 
-                       text = paste("Cohort mutation frequency: ", round(mutRates[[g]], digits = 2) , "%")
+                       text = paste("Cohort mutation rate: ", round(mutRates[[g]], digits = 2) , "%")
                        #color = mutRates[[g]]
                       )
 }
@@ -118,7 +119,7 @@ p
 # pathway lists
 gene <- list(c("EGFR", "FGFR1", "ERBB2", "ERBB3", "ERBB4", "ROS1", "MET", "ALK", "FLT1", 
                "PDGFRA", "FLT3", "FLT4", "RET", "FGFR2", "FGFR3"),
-             c("PIK3CA", "PIK3CB", "PIK3CG", "PIK3CD", PTEN", "AKT3", "MTOR", "AKT2", "TSC2", "TSC1", "AKT1"),
+             c("PIK3CA", "PIK3CB", "PIK3CG", "PIK3CD", "PTEN", "AKT3", "MTOR", "AKT2", "TSC2", "TSC1", "AKT1"),
              c("C7orf60", "GATSL1", "GATSL3"),
              c("DEPDC5", "NPRL2", "NPRL3"),
              c("MIOS", "SEH1L", "SEC13", "WDR24", "WDR59", "SLC38A9"),
@@ -178,7 +179,9 @@ slickR::slickR(p, height = 600) + slickR::settings(dots = TRUE)
 ```
 
 
-### Signatures of Vascularization
+### RNAseq analysis
+
+  
 
 
 

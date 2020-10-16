@@ -19,6 +19,7 @@ library(dplyr)
 library(ggplot2)
 library(plotly)
 library(kableExtra)
+source("gsea.R", local = knitr::knit_global())
 knitr::opts_chunk$set(echo = F, warning = F, message = F, fig.align = 'center', out.width = '100%')
 ```
 
@@ -35,12 +36,12 @@ knitr::opts_chunk$set(echo = F, warning = F, message = F, fig.align = 'center', 
 ```
 
 Inputs {.sidebar}
------------------------------------------------------------------------
+=======================================================================
 ### Analysis info
 
 Ran [MutSigCV](https://software.broadinstitute.org/cancer/cga/mutsig) to get p-values. These indicate if the mutation frequency of a gene is significant, accounting for the background mutation rate of the patient, the gene expression level, gene replication timing, and chromatin state.
 
-Data retrieved from [GDC data portal](https://portal.gdc.cancer.gov/). Data displayed is from MC3 data project, and aligned to hg19. MAF files an oncoplots were prepared using [maftools](https://www.bioconductor.org/packages/release/bioc/html/maftools.html). 
+Data retrieved from [GDC data portal](https://portal.gdc.cancer.gov/). Mutation displayed is from MC3 data project, and aligned to hg19. MAF files an oncoplots were prepared using [maftools](https://www.bioconductor.org/packages/release/bioc/html/maftools.html). Expression data is from HTseq counts experiemnts, aligned to hg38. 
 
 *** 
 
@@ -50,12 +51,15 @@ Data retrieved from [GDC data portal](https://portal.gdc.cancer.gov/). Data disp
 
 **Waterfall plots**: show co-occuring alterations in a pathway for each patient. Blue are oncogenes, red are tumour suppressors. 
 
-Row {.tabset}
------------------------------------------------------------------------
+**Volcano plots** show log2 fold change in RNA-seq expression counts for PI3K/PTEN vs MTOR alterated cases. 
 
-### Gene significance
-    
-```{r, manifest, include = F}
+**Kegg patway plots** show log2 fols change in RNA-seq expression counts in context of the signalling pathway (protein view). Blue is downregulated relative to reference class, and red is upregulated. 
+
+
+Gene Significance 
+=======================================================================
+
+```{r, manifest, include = F, eval = T}
 # mafs
 maf_dir <- params$maf_dir
 maf_fns <- list.files(maf_dir, pattern = "*.maf")
@@ -81,7 +85,7 @@ for (c in names(mafs)) {
 }
 ```
 
-```{r sig-genes}
+```{r sig-genes, eval = T}
 df <- as.data.frame(t(mutsig_p))
 sampleSizes <- sapply(mafs, function(x){as.numeric(x@summary[ID %in% 'Samples', summary])})
 mutRates <- sapply(mafs, function(x){getGeneSummary(x)[match(goi, getGeneSummary(x)$Hugo_Symbol), MutatedSamples]})
@@ -113,10 +117,8 @@ p <- p %>%
 p
 ```
 
-### Oncoplots
+```{r pthw-assignment}
 
-```{r, oncoplots}
-# pathway lists
 gene <- list(c("EGFR", "FGFR1", "ERBB2", "ERBB3", "ERBB4", "ROS1", "MET", "ALK", "FLT1", 
                "PDGFRA", "FLT3", "FLT4", "RET", "FGFR2", "FGFR3"),
              c("PIK3CA", "PIK3CB", "PIK3CG", "PIK3CD", "PTEN", "AKT3", "MTOR", "AKT2", "TSC2", "TSC1", "AKT1"),
@@ -129,59 +131,134 @@ pw_name <- c("RTKS pthw", "PI3K pthw", "SAMTOR", "GATOR1", "GATOR2", "KICSTOR")
 pathways <- data.frame(unlist(gene), rep(pw_name, times = sapply(gene, length)))
 pidx <- length(gene[[1]]) + length(gene[[2]]) + 1
 
+```
 
-# make oncoplot with pvalues from mutsigcv
-p <- list()
-for (c in names(mafs)){
-  rbd <- data.frame(gene = rownames(mutsig_p), p = mutsig_p[[c]])
-  svg <- svglite::xmlSVG(
-         code = { oncoplot(maf = mafs[[c]], pathways = pathways, 
+
+KIRC
+=======================================================================
+
+```{r kirc, eval = T}
+proj_name <- "TCGA-KIRC"
+dea <- prepDE(proj_name, setdiff = F, count_thresh = 50, maf_fn = sprintf("../GDCdata/MC3/%s.mutSig.maf", proj_name), 
+                   counts_fn = sprintf("../GDCdata/HTseq/%s_counts.rda", proj_name))
+```
+
+Row
+-----------------------------------------------------------------------
+
+### Volcano plot
+
+```{r kirc-volcano}
+volcano(dea$dds, dea$res, "PI3K/PTEN mutated vs MTOR mutated")
+```
+
+### PI3K waterfall
+
+```{r kirc-waterfall}
+PlotOncogenicPathways(dea$maf, pathways = "PI3K")
+```
+
+Row
+-----------------------------------------------------------------------
+
+### Kegg pathway view
+
+```{r kirc-kegg}
+
+
+kegg_highlight(dea$counts, dea$res)
+```
+
+### Oncoplot 
+
+```{r kirc-onco, eval = F}
+oncoplot(maf = mafs[[proj_name]], pathways = pathways, 
                   rightBarData = rbd, rightBarLims = c(0, 0.1), 
-                  keepGeneOrder = T, gene_mar = 8, titleText = c)},
-         standalone = T)
-  p[[c]] <- svg
-}
-
-slickR::slickR(p, height = 600) + slickR::settings(dots = TRUE, autoplay = TRUE)
-```
-
-### RTK-RAS waterfall plots 
-
-```{r}
-p <- list()
-for (c in names(mafs)){
-  rbd <- data.frame(gene = rownames(mutsig_p), p = mutsig_p[[c]])
-  svg <- svglite::xmlSVG(
-         code = { PlotOncogenicPathways(maf = mafs[[c]], pathways = "RTK-RAS")
-                  title(main = c)},
-         standalone = T)
-  p[[c]] <- svg
-}
-
-slickR::slickR(p, height = 600) + slickR::settings(dots = TRUE)
-```
-
-### PI3K waterfall plots 
-
-
-```{r}
-p <- list()
-for (c in names(mafs)){
-  rbd <- data.frame(gene = rownames(mutsig_p), p = mutsig_p[[c]])
-  svg <- svglite::xmlSVG(
-         code = { PlotOncogenicPathways(maf = mafs[[c]], pathways = "PI3K")
-                  title(main = c)},
-         standalone = T)
-  p[[c]] <- svg
-}
-
-slickR::slickR(p, height = 600) + slickR::settings(dots = TRUE)
+                  keepGeneOrder = T, gene_mar = 8, titleText = c)
 ```
 
 
-### RNAseq analysis
 
-  
+UCEC
+=======================================================================
+
+DE analysis is restricted to MSI subtype only.
+
+```{r ucec}
+proj_name <- "TCGA-UCEC"
+dea <- prepDE(proj_name, setdiff = F, count_thresh = 100, maf_fn = sprintf("../GDCdata/MC3-subtyped/%s.UCEC.MSI.mutSig.maf", proj_name), 
+                   counts_fn = sprintf("../GDCdata/HTseq/%s_counts.rda", proj_name))
+```
+
+Row
+-----------------------------------------------------------------------
+
+### Volcano plot
+
+```{r ucec-volcano}
+volcano(dea$dds, dea$res, "PI3K/PTEN mutated vs MTOR mutated")
+```
+
+### PI3K waterfall
+
+```{r ucec-waterfall}
+PlotOncogenicPathways(dea$maf, pathways = "PI3K")
+```
+
+Row
+-----------------------------------------------------------------------
+
+### Kegg pathway view
+
+```{r ucec-kegg}
+kegg_highlight(dea$counts, dea$res)
+```
+
+### Oncoplot 
+
+```{r ucec-onco, eval = F}
+plot(1:20, col = 1:20)
+```
 
 
+COAD
+=======================================================================
+
+DE analysis is restricted to MSI subtype only.
+
+```{r coad}
+proj_name <- "TCGA-COAD"
+dea <- prepDE(proj_name, setdiff = F, count_thresh = 50, maf_fn = sprintf("../GDCdata/MC3-subtyped/%s.GI.MSI.mutSig.maf", proj_name), 
+                   counts_fn = sprintf("../GDCdata/HTseq/%s_counts.rda", proj_name))
+```
+
+Row
+-----------------------------------------------------------------------
+
+### Volcano plot
+
+```{r coad-volcano}
+volcano(dea$dds, dea$res, "PI3K/PTEN mutated vs MTOR mutated")
+```
+
+### PI3K waterfall
+
+```{r coad-waterfall}
+PlotOncogenicPathways(dea$maf, pathways = "PI3K")
+```
+
+Row
+-----------------------------------------------------------------------
+
+### Kegg pathway view
+
+```{r coad-kegg}
+kegg_highlight(dea$counts, dea$res)
+```
+
+### Oncoplot 
+
+```{r coad-onco, eval = F}
+plot(1:20, col = 1:20)
+```
 

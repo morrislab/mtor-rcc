@@ -9,6 +9,7 @@ library(clusterProfiler)
 library(enrichplot)
 library(pathview)
 library(plotly)
+library(dplyr)
 library("org.Hs.eg.db", character.only = TRUE)
 
 require(grid)
@@ -57,7 +58,10 @@ prepDE <- function(proj_name, setdiff = T, count_thresh = 10, maf_fn = sprintf("
   dds <- DESeq(dds[sel,], parallel = T)
   res <- results(dds)
 
-  return(list(maf = maf, dds = dds, res = res, counts = counts))
+  # return maf restricted to ref & mtr samples
+  r_maf <- subsetMaf(maf, tsb = union(ref_samples, mtor_samples))
+
+  return(list(maf = r_maf, dds = dds, res = res, counts = counts))
 }
 
 # from https://stackoverflow.com/questions/60141841/how-to-get-pathview-plot-displayed-directly-rather-than-saving-as-a-file-in-r
@@ -114,13 +118,33 @@ kegg_highlight <- function(counts, res){
 
 }
 
+# from https://stackoverflow.com/questions/34093169/horizontal-vertical-line-in-plotly
+gg_hline <- function(y = 0, color = "blue") {
+  list(
+    type = "line", 
+    x0 = 0, 
+    x1 = 1, 
+    xref = "paper",
+    y0 = y, 
+    y1 = y, 
+    line = list(color = color)
+  )
+}
 
-volcano <- function(dds, res, contrast){
-  
-  p <- plot_ly(data = as.data.frame(res), x = ~log2FoldChange, y = ~ -log10(padj),
+volcano <- function(dds, res, contrast, goi = 'mTOR'){
+
+  # dds and res should have exactly the same rows
+  goi_sel <- rowData(dds)$external_gene_name %in% goi
+
+  p <- as.data.frame(res) %>%
+       mutate(gcol = 'Other gene') %>%
+       mutate(gcol = replace(gcol, goi_sel, 'Gene of interest')) %>%
+       mutate(gcol = replace(gcol, rowData(dds)$external_gene_name == 'MTOR', 'MTOR')) %>%
+       mutate(padj = replace(padj, (abs(log2FoldChange) > 8), NA)) %>%
+       plot_ly(x = ~log2FoldChange, y = ~ -log10(padj),
                type = 'scatter', mode = 'markers', 
-               text = rowData(dds)$external_gene_name, color = "red") %>% 
-        layout(title = contrast) 
+               text = rowData(dds)$external_gene_name, color = ~gcol) %>% 
+       layout(title = contrast, shapes = list(gg_hline(-log10(0.01)), gg_hline(-log10(0.05))) ) 
 
   p
 

@@ -35,7 +35,7 @@ knitr::opts_chunk$set(echo = F, warning = F, message = F, fig.align = 'center', 
 
 ```
 
-Inputs {.sidebar}
+Inputs {.sidebar data-width=300}
 =======================================================================
 ### Analysis info
 
@@ -43,9 +43,11 @@ Ran [MutSigCV](https://software.broadinstitute.org/cancer/cga/mutsig) to get p-v
 
 Data retrieved from [GDC data portal](https://portal.gdc.cancer.gov/). Mutation displayed is from MC3 data project, and aligned to hg19. MAF files an oncoplots were prepared using [maftools](https://www.bioconductor.org/packages/release/bioc/html/maftools.html). Expression data is from HTseq counts experiemnts, aligned to hg38. 
 
+Static images may be opened in another tab for higher resolution. 
+
 *** 
 
-**Gene Significance**: MutSigCV p-values are plotted for each available TCGA cancer type, for a select set of genes. 
+**Gene Significance**: MutSigCV p-values are plotted for each available TCGA cancer type, for a select set of genes. Four subtypes are shown per cancer type, where POLE subtypes have high occurrance of SNV's, MSI have high occurrance of structural abnormalities. Subtypes prefixed with 'm' are found via mRNA expression hirearchical clustering.  
 
 **Oncoplots**: show the frequency and nature of mutations in the patients of a given cancer type. Gene sets are boxed in grey. Barplot on right illustrates p-value for a given gene, as determined with MutSigCV. 
 
@@ -53,7 +55,16 @@ Data retrieved from [GDC data portal](https://portal.gdc.cancer.gov/). Mutation 
 
 **Volcano plots** show log2 fold change in RNA-seq expression counts for PI3K/PTEN vs MTOR alterated cases. 
 
-**Kegg patway plots** show log2 fols change in RNA-seq expression counts in context of the signalling pathway (protein view). Blue is downregulated relative to reference class, and red is upregulated. 
+Compares two groups of samples:
+
+1. those that contain either a PI3K or a PTEN mutation, and no mTOR mutation; this is the reference group
+2. those that contain an mTOR mutaiton (and possibly a PI3K or PTEN mutation) 
+
+Nb. that although these sets are not perfect complements of each other, there are no overlaps between them. (ie. no sample contribtes to both the numerator and denominator of the FC calculation)
+
+FC >0 indicates this gene had higher expression counts in the mTOR group, compared with the reference group. Genes of interest is the same list as shown in the *Gene Significance* tab
+
+**Kegg patway plots** show log2 fold change in RNA-seq expression counts in context of the signalling pathway (protein view). Blue is downregulated relative to reference group, and red is upregulated. These are the same groups as in the volcano plot. 
 
 
 Gene Significance 
@@ -117,7 +128,7 @@ p <- p %>%
 p
 ```
 
-```{r pthw-assignment}
+```{r pthw-assignment, eval = T}
 
 gene <- list(c("EGFR", "FGFR1", "ERBB2", "ERBB3", "ERBB4", "ROS1", "MET", "ALK", "FLT1", 
                "PDGFRA", "FLT3", "FLT4", "RET", "FGFR2", "FGFR3"),
@@ -136,6 +147,7 @@ pidx <- length(gene[[1]]) + length(gene[[2]]) + 1
 
 KIRC
 =======================================================================
+DE analysis includes all 4 mRNA subtypes.
 
 ```{r kirc, eval = T}
 proj_name <- "TCGA-KIRC"
@@ -148,13 +160,13 @@ Row
 
 ### Volcano plot
 
-```{r kirc-volcano}
-volcano(dea$dds, dea$res, "PI3K/PTEN mutated vs MTOR mutated")
+```{r kirc-volcano, eval = T}
+volcano(dea$dds, dea$res, "PI3K/PTEN mutated vs MTOR mutated", goi = goi)
 ```
 
 ### PI3K waterfall
 
-```{r kirc-waterfall}
+```{r kirc-waterfall, eval = T}
 PlotOncogenicPathways(dea$maf, pathways = "PI3K")
 ```
 
@@ -163,28 +175,18 @@ Row
 
 ### Kegg pathway view
 
-```{r kirc-kegg}
-
-
+```{r kirc-kegg, eval = T}
 kegg_highlight(dea$counts, dea$res)
 ```
 
-### Oncoplot 
-
-```{r kirc-onco, eval = F}
-oncoplot(maf = mafs[[proj_name]], pathways = pathways, 
-                  rightBarData = rbd, rightBarLims = c(0, 0.1), 
-                  keepGeneOrder = T, gene_mar = 8, titleText = c)
-```
-
-
+### {-}
 
 UCEC
 =======================================================================
 
 DE analysis is restricted to MSI subtype only.
 
-```{r ucec}
+```{r ucec, eval = T}
 proj_name <- "TCGA-UCEC"
 dea <- prepDE(proj_name, setdiff = F, count_thresh = 100, maf_fn = sprintf("../GDCdata/MC3-subtyped/%s.UCEC.MSI.mutSig.maf", proj_name), 
                    counts_fn = sprintf("../GDCdata/HTseq/%s_counts.rda", proj_name))
@@ -195,13 +197,13 @@ Row
 
 ### Volcano plot
 
-```{r ucec-volcano}
-volcano(dea$dds, dea$res, "PI3K/PTEN mutated vs MTOR mutated")
+```{r ucec-volcano, eval = T}
+volcano(dea$dds, dea$res, "PI3K/PTEN mutated vs MTOR mutated", goi = goi  )
 ```
 
 ### PI3K waterfall
 
-```{r ucec-waterfall}
+```{r ucec-waterfall, eval = T}
 PlotOncogenicPathways(dea$maf, pathways = "PI3K")
 ```
 
@@ -210,23 +212,18 @@ Row
 
 ### Kegg pathway view
 
-```{r ucec-kegg}
+```{r ucec-kegg, eval = T}
 kegg_highlight(dea$counts, dea$res)
 ```
 
-### Oncoplot 
-
-```{r ucec-onco, eval = F}
-plot(1:20, col = 1:20)
-```
-
+### {-}
 
 COAD
 =======================================================================
 
 DE analysis is restricted to MSI subtype only.
 
-```{r coad}
+```{r coad, eval = T}
 proj_name <- "TCGA-COAD"
 dea <- prepDE(proj_name, setdiff = F, count_thresh = 50, maf_fn = sprintf("../GDCdata/MC3-subtyped/%s.GI.MSI.mutSig.maf", proj_name), 
                    counts_fn = sprintf("../GDCdata/HTseq/%s_counts.rda", proj_name))
@@ -237,13 +234,13 @@ Row
 
 ### Volcano plot
 
-```{r coad-volcano}
-volcano(dea$dds, dea$res, "PI3K/PTEN mutated vs MTOR mutated")
+```{r coad-volcano, eval = T}
+volcano(dea$dds, dea$res, "PI3K/PTEN mutated vs MTOR mutated", goi = goi)
 ```
 
 ### PI3K waterfall
 
-```{r coad-waterfall}
+```{r coad-waterfall, eval = T}
 PlotOncogenicPathways(dea$maf, pathways = "PI3K")
 ```
 
@@ -252,13 +249,8 @@ Row
 
 ### Kegg pathway view
 
-```{r coad-kegg}
+```{r coad-kegg, eval = T}
 kegg_highlight(dea$counts, dea$res)
 ```
 
-### Oncoplot 
-
-```{r coad-onco, eval = F}
-plot(1:20, col = 1:20)
-```
-
+### {-}

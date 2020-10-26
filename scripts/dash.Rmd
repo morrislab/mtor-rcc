@@ -62,7 +62,7 @@ Compares two groups of samples:
 
 Nb. that although these sets are not perfect complements of each other, there are no overlaps between them. (ie. no sample contribtes to both the numerator and denominator of the FC calculation)
 
-FC >0 indicates this gene had higher expression counts in the mTOR group, compared with the reference group. Genes of interest is the same list as shown in the *Gene Significance* tab
+FC >0 indicates this gene had higher expression counts in the mTOR group, compared with the reference group. Genes of interest is the same list as shown in the *Gene Significance* tab. Gene in vascular signature is the union of 11 genes from [PMC6917213](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6917213/), 42 genes from [PMC3743050](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3743050/#mmc3), and HIF1$\alpha$
 
 **Kegg patway plots** show log2 fold change in RNA-seq expression counts in context of the signalling pathway (protein view). Blue is downregulated relative to reference group, and red is upregulated. These are the same groups as in the volcano plot. 
 
@@ -173,13 +173,18 @@ PlotOncogenicPathways(dea$maf, pathways = "PI3K")
 Row
 -----------------------------------------------------------------------
 
-### Kegg pathway view
+### mTOR KEGG pathway
 
-```{r kirc-kegg, eval = T}
-kegg_highlight(dea$counts, dea$res)
+```{r kirc-kegg1, eval = T}
+kegg_highlight(dea$counts, dea$res, pth = "hsa04151")
 ```
 
-### {-}
+### HIF1$\alpha$ KEGG pathway
+
+```{r kirc-kegg2, eval = T}
+kegg_highlight(dea$counts, dea$res, pth = "hsa04066")
+```
+
 
 UCEC
 =======================================================================
@@ -210,13 +215,17 @@ PlotOncogenicPathways(dea$maf, pathways = "PI3K")
 Row
 -----------------------------------------------------------------------
 
-### Kegg pathway view
+### mTOR KEGG pathway
 
-```{r ucec-kegg, eval = T}
-kegg_highlight(dea$counts, dea$res)
+```{r ucec-kegg1, eval = T}
+kegg_highlight(dea$counts, dea$res, pth = "hsa04151")
 ```
 
-### {-}
+### HIF1$\alpha$ KEGG pathway
+
+```{r ucec-kegg2, eval = T}
+kegg_highlight(dea$counts, dea$res, pth = "hsa04066")
+```
 
 COAD
 =======================================================================
@@ -247,10 +256,14 @@ PlotOncogenicPathways(dea$maf, pathways = "PI3K")
 Row
 -----------------------------------------------------------------------
 
-### Kegg pathway view
+### mTOR KEGG pathway
 
-```{r coad-kegg, eval = T}
-kegg_highlight(dea$counts, dea$res)
+```{r coad-kegg1, eval = T}
+kegg_highlight(dea$counts, dea$res, pth = "hsa04151")
 ```
 
-### {-}
+### HIF1$\alpha$ KEGG pathway
+
+```{r coad-kegg2, eval = T}
+kegg_highlight(dea$counts, dea$res, pth = "hsa04066")
+```

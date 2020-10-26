@@ -76,7 +76,7 @@ see_pathview <- function(..., save_image = FALSE)
 }
 
 
-kegg_highlight <- function(counts, res){
+kegg_highlight <- function(counts, res, pth = "hsa04151"){
   # from https://learn.gencore.bio.nyu.edu/rna-seq-analysis/gene-set-enrichment-analysis/
   # map via HGNC alias, for higher fidelity than ENSG id
   gene_list <- res$log2FoldChange
@@ -114,7 +114,7 @@ kegg_highlight <- function(counts, res){
                  keyType       = "ncbi-geneid")
   
   
-  see_pathview(gene.data=gene_list, pathway.id="hsa04151", species = "hsa", low = "blue", high = "red")
+  see_pathview(gene.data=gene_list, pathway.id=pth, species = "hsa", low = "blue", high = "red")
 
 }
 
@@ -136,9 +136,21 @@ volcano <- function(dds, res, contrast, goi = 'mTOR'){
   # dds and res should have exactly the same rows
   goi_sel <- rowData(dds)$external_gene_name %in% goi
 
+  vasc_genes <- c('UHRF1', 'MKI67', 'VEGFA', 'ANGPT2', 'CH25H', 'PIEZO2', 'SERPINE1',
+                  'SERPINA3', 'LAD1', 'APLN', 'S100A11', 'HIF1A', 'CDH5', 
+                  'ADGRL4', 'CLEC14A', 'LDB2', 'ECSCR', 'MYCT1', 'RHOJ', 'VWF', 
+                  'TIE1', 'KDR', 'ESAM', 'CD93', 'PTPRB', 'ADGRF5', 'SPARCL1', 
+                  'EMCN', 'ROBO4', 'ENG', 'TEK', 'S1PR1', 'A2M', 'JAM2', 'MEF2C', 
+                  'COL15A1', 'PECAM1', 'CALCRL', 'CLEC3B', 'PLVAP', 'RGS5', 'LRRC32', 
+                  'EBF1', 'ADCY4', 'ACVRL1', 'ADGRA2', 'APLNR', 'TM4SF18', 'GNG11', 
+                  'CNRIP1', 'ZNF423', 'GIMAP8', 'PDGFD', 'ITGA9', 'EDNRB')
+
+  vasc_sel <- rowData(dds)$external_gene_name %in% vasc_genes
+
   p <- as.data.frame(res) %>%
        mutate(gcol = 'Other gene') %>%
        mutate(gcol = replace(gcol, goi_sel, 'Gene of interest')) %>%
+       mutate(gcol = replace(gcol, vasc_sel, 'Gene in vascularization signature')) %>%
        mutate(gcol = replace(gcol, rowData(dds)$external_gene_name == 'MTOR', 'MTOR')) %>%
        mutate(padj = replace(padj, (abs(log2FoldChange) > 8), NA)) %>%
        plot_ly(x = ~log2FoldChange, y = ~ -log10(padj),

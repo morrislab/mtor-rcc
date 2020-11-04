@@ -1,38 +1,38 @@
 abbrev	brief	name
-TCGA-LAML	Leukemia	Acute Myeloid Leukemia
-TCGA-ACC	ACC	Adrenocortical carcinoma
-TCGA-BLCA	Bladder 	Bladder Urothelial Carcinoma
-TCGA-LGG	Brain Glioma	Brain Lower Grade Glioma
-TCGA-BRCA	Breast	Breast invasive carcinoma
-TCGA-CESC	Cervical 	Cervical squamous cell carcinoma and endocervic
+TCGA-LAML	Acute Myeloid Leukemia	Acute Myeloid Leukemia
+TCGA-ACC	Adrenocortical Carcinoma	Adrenocortical carcinoma
+TCGA-BLCA	Bladder Carcinoma	Bladder Urothelial Carcinoma
+TCGA-LGG	Brain Glioma (LG)	Brain Lower Grade Glioma
+TCGA-BRCA	Breast Carcinoma	Breast invasive carcinoma
+TCGA-CESC	Cervical SCC	Cervical squamous cell carcinoma and endocervic
 TCGA-CHOL	Cholangiocarcinoma	Cholangiocarcinoma
-TCGA-LCML	Leukemia	Chronic Myelogenous Leukemia
-TCGA-COAD	Colon	Colon adenocarcinoma
+TCGA-LCML	Chronic Myelogenous Leukemia	Chronic Myelogenous Leukemia
+TCGA-COAD	Colon Adenocarcinoma	Colon adenocarcinoma
 TCGA-CNTL	Controls	Controls
-TCGA-ESCA	Esophageal 	Esophageal carcinoma
+TCGA-ESCA	Esophageal Carcinoma	Esophageal carcinoma
 TCGA-FPPP	FFPE Pilot Phase II	FFPE Pilot Phase II
-TCGA-GBM	Glioblastoma	Glioblastoma multiforme
-TCGA-HNSC	Head and Neck	Head and Neck squamous cell carcinoma
+TCGA-GBM	Glioblastoma Multiforme	Glioblastoma multiforme
+TCGA-HNSC	Head & Neck SCC	Head and Neck squamous cell carcinoma
 TCGA-KICH	Kidney Chromophobe	Kidney Chromophobe
-TCGA-KIRC	Kidney clear cell	Kidney renal clear cell carcinoma
-TCGA-KIRP	Kidney papillary cell	Kidney renal papillary cell carcinoma	
-TCGA-LIHC	Liver	Liver hepatocellular carcinoma
-TCGA-LUAD	Lung adeno	Lung adenocarcinoma
+TCGA-KIRC	Kidney RCCC	Kidney renal clear cell carcinoma
+TCGA-KIRP	Renal Papillary Cell	Kidney renal papillary cell carcinoma   
+TCGA-LIHC	Hepatocellular Carcinoma	Liver hepatocellular carcinoma
+TCGA-LUAD	Lung Adenocarcinoma	Lung adenocarcinoma
 TCGA-LUSC	Lung SCC	Lung squamous cell carcinoma
-TCGA-DLBC	B-cell Lymphoma	Lymphoid Neoplasm Diffuse Large B-cell Lymphoma
+TCGA-DLBC	DLBCL	Lymphoid Neoplasm Diffuse Large B-cell Lymphoma
 TCGA-MESO	Mesothelioma	Mesothelioma
 TCGA-MISC	Miscellaneous	Miscellaneous
-TCGA-OV	Ovarian	Ovarian serous cystadenocarcinoma
-TCGA-PAAD	Pancreatic	Pancreatic adenocarcinoma
-TCGA-PCPG	Adrenal	Pheochromocytoma and Paraganglioma
-TCGA-PRAD	Prostate	Prostate adenocarcinoma
-TCGA-READ	Rectum	Rectum adenocarcinoma
+TCGA-OV	Ovarian Carcinoma	Ovarian serous cystadenocarcinoma
+TCGA-PAAD	Pancreatic Adenocarcinoma	Pancreatic adenocarcinoma
+TCGA-PCPG	Pheochromocytoma & Para	Pheochromocytoma and Paraganglioma
+TCGA-PRAD	Prostate Adenocarcinoma	Prostate adenocarcinoma
+TCGA-READ	Rectal Adenocarcinoma	Rectum adenocarcinoma
 TCGA-SARC	Sarcoma	Sarcoma
-TCGA-SKCM	Melanoma	Skin Cutaneous Melanoma
-TCGA-STAD	Stomach	Stomach adenocarcinoma
-TCGA-TGCT	Testicular	Testicular Germ Cell Tumors
+TCGA-SKCM	Cutaneous Melanoma	Skin Cutaneous Melanoma
+TCGA-STAD	Stomach Adenocarcinoma	Stomach adenocarcinoma
+TCGA-TGCT	Germ Cell Tumors	Testicular Germ Cell Tumors
 TCGA-THYM	Thymoma	Thymoma
-TCGA-THCA	Thyroid	Thyroid carcinoma
-TCGA-UCS	Uterine	Uterine Carcinosarcoma
-TCGA-UCEC	Uterine Corpus	Uterine Corpus Endometrial Carcinoma
+TCGA-THCA	Thyroid Carcinoma	Thyroid carcinoma
+TCGA-UCS	Uterine Carcinosarcoma	Uterine Carcinosarcoma
+TCGA-UCEC	Endometrial Carcinoma	Uterine Corpus Endometrial Carcinoma
 TCGA-UVM	Uveal Melanoma	Uveal Melanoma

@@ -3,7 +3,6 @@ library(dplyr)
 library(ggplot2)
 library(reshape2)
 library(VennDiagram)
-library(cowplot)
 library(viridis)
 
 # taken from rmd

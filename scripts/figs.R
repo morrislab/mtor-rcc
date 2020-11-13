@@ -137,11 +137,32 @@ renal_mutsig_p %>%
 		   cancer = renal_names$name[match(variable, renal_names$abbrev)],
 		   value = pmin(-log10(value), 5)) -> df
 
+#renal_mutRates[c('MTOR', "PTEN", "PIK3CA")] %>% 
+#	tibble::rownames_to_column(var = "abbrev") %>% 
+#	melt() %>% rename(Gene = variable) %>%
+#	mutate(id = stringr::str_c(abbrev, Gene)) -> mr
+
+#df %>% 
+#	subset(Gene %in% c('PIK3CA', 'PTEN', 'MTOR')) %>%
+#	rename(abbrev = variable, p = value) %>%
+#	mutate(cancer = ordered(cancer, levels = rev(unique(cancer[order(desc(p), desc(Gene))]))),
+#		   id = stringr::str_c(abbrev, Gene), frac = mr['value'][match(id, mr$id),], antifrac = (100-frac)) %>%
+#	melt() %>% tidyr::replace_na(list(value = 0)) %>% 
+# 	mutate(panel = factor(ifelse(variable == "p", 'bar', 'pie')),
+# 		   variable = factor(ifelse(variable == "frac", Gene, variable))) 
+
+df %>% 
+	subset(Gene %in% c('PIK3CA', 'PTEN', 'MTOR')) %>%
+	arrange(desc(value), desc(Gene)) %>%
+	select(cancer) %>% unique() %>% unlist() -> lvls
+
+lvl_ord <- rev(unique(cancer[order(desc(value), desc(Gene))]))
+
 # vanilla
 png(file = '../plots_tmp/mutsig_renal_subtypes.png')
 df %>% 
 	subset(Gene %in% c('PIK3CA', 'PTEN', 'MTOR')) %>%
-	mutate(cancer = ordered(cancer, levels = rev(unique(cancer[order(desc(value), desc(Gene))])))) %>%
+	mutate(cancer = ordered(cancer, levels = lvls)) %>%
 	ggplot(aes(x=value, y="", fill = Gene)) + 
 		geom_bar(position="dodge", stat="identity") +
 		geom_vline(xintercept = -log10(0.05), size=0.2, linetype="dashed") +
@@ -156,24 +177,26 @@ p1
 dev.off()
 
 # with pies
-png(file = '../plots_tmp/mutsig_renal_subtypes_pies.png')
-renal_mutRates[c('MTOR', "PTEN", "PIK3CA")] %>%
-	tibble::rownames_to_column(var = "abbrev") %>%
-	mutate(cancer = renal_names$name[match(abbrev, renal_names$abbrev)]) %>%
-	melt() %>% tidyr::replace_na(list(value = 0)) %>% 
-	mutate(Gene = variable, frac = value/100, antifrac = 1-(value/100), variable=NULL, value = NULL) %>%
-	melt() %>% mutate(variable = factor(ifelse(variable == "antifrac", "antifrac", Gene))) %>%
+png(file = '../plots_tmp/mutsig_renal_subtypes_pies.png', width = 600)
+renal_mutRates[c('MTOR', "PTEN", "PIK3CA")] %>% 
+	tibble::rownames_to_column(var = "abbrev") %>% 
+	melt() %>% rename(Gene = variable, frac = value) %>%
+	mutate(cancer = ordered(renal_names$brief[match(abbrev, renal_names$abbrev)], levels = lvls), antifrac = 100-frac) %>%
+	melt() %>%tidyr::replace_na(list(value = 0)) %>%
+	mutate(variable = factor(ifelse(variable == "antifrac", "antifrac", Gene))) %>%
 	ggplot(aes(x = "", y=value, fill=variable)) + 
 		geom_bar(stat = "identity", width = 1, position = position_fill()) + 
 		coord_polar("y", start=0) + 
 		scale_fill_manual(values=c(viridis(3)[3:1], "#d3d3d3")) + 
-		facet_wrap( ~ cancer + Gene, ncol = 3) +
+		facet_wrap(vars(cancer,Gene), ncol = 3) +
 		theme_classic() + 
 		theme(strip.background = element_blank(), strip.text = element_blank(), 
 			  legend.position = "none", axis.text = element_blank(),
         	  axis.ticks = element_blank(), panel.grid  = element_blank()) -> p2
 
-plot_grid(p1, p2, ncol = 2, align = "h", axis = "b", rel_heights = c(1, 6))
+#cowplot::plot_grid(p1, p2, ncol = 2, align = "v", axis = "bt")
+#patchwork::wrap_plots(p1,p2)
+egg::ggarrange(p1, p2, ncol =2)
 dev.off()
 
 # Waterfall plots

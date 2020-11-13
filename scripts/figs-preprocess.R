@@ -3,6 +3,7 @@ library(dplyr)
 library(ggplot2)
 library(reshape2)
 library(VennDiagram)
+library(cowplot)
 library(viridis)
 
 # taken from rmd
@@ -53,7 +54,6 @@ mutRates <- sapply(mafs, function(x){getGeneSummary(x)[match(goi, getGeneSummary
 mutRates <- as.data.frame(apply(mutRates, denom = sampleSizes, FUN = function(x, denom){ x / denom * 100}, MAR = 1))
 colnames(mutRates) <- goi
 
-cancer_names$median_TMB <- lapply(mafs, med_tmb)[cancer_names$abbrev]
 
 
 # renal subtyping
@@ -89,7 +89,7 @@ renal_mutRates <- sapply(renal_mafs, function(x){getGeneSummary(x)[match(goi, ge
 renal_mutRates <- as.data.frame(apply(renal_mutRates, denom = renal_sampleSizes, FUN = function(x, denom){ x / denom * 100}, MAR = 1))
 colnames(renal_mutRates) <- goi
 
-renal_names$median_TMB <- lapply(renal_mafs, med_tmb)[renal_names$abbrev]
+#renal_names$median_TMB <- lapply(renal_mafs, med_tmb)[renal_names$abbrev]
 
 #endometrial subtyping
 
@@ -124,4 +124,4 @@ endo_mutRates <- sapply(endo_mafs, function(x){getGeneSummary(x)[match(goi, getG
 endo_mutRates <- as.data.frame(apply(mutRates, denom = sampleSizes, FUN = function(x, denom){ x / denom * 100}, MAR = 1))
 colnames(endo_mutRates) <- goi
 
-endo_names$median_TMB <- lapply(endo_mafs, med_tmb)[endo_names$abbrev]
+#endo_names$median_TMB <- lapply(endo_mafs, med_tmb)[endo_names$abbrev]

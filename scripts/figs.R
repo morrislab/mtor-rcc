@@ -1,4 +1,4 @@
-source('figs-preprocess.R')
+#source('figs-preprocess.R')
 
 mutsig_p %>%
 	melt() %>%
@@ -13,9 +13,9 @@ df %>%
 	ggplot(aes(fill=Gene, x=value, y=cancer)) + 
 		geom_bar(position="dodge", stat="identity") +
 		geom_vline(xintercept = -log10(0.05), size=0.2, linetype="dashed") +
-		annotate('text', y = 1, x = 1.7, label = 'p = 0.05', size = 2) +
+		annotate('text', y = 1, x = 1.7, label = 'p = 0.05', size = 2.5) +
 		geom_vline(xintercept = -log10(0.001), size=0.2, linetype="dashed") +
-		annotate('text', y = 1, x = 3.4, label = 'p = 0.001', size = 2) +
+		annotate('text', y = 1, x = 3.5, label = 'p = 0.001', size = 2.5) +
 		labs(title= 'Mutation frequency significance', y = '', x = expression(-log[10](p-value)) ) + 
 		scale_fill_viridis(discrete = T, direction = -1) +
 		theme_classic()
@@ -25,13 +25,15 @@ png(file = '../plots_tmp/mutsig_drivers.png')
 df %>% 
 	subset(Gene %in% c("TP53", "KRAS", "BRCA1", "BRCA2", "TTN")) %>%
 	mutate(cancer = ordered(cancer, levels = rev(unique(cancer[order(desc(value), desc(Gene))])))) %>%
-	ggplot(aes(fill=Gene, y=value, x=cancer)) + 
+	ggplot(aes(fill=Gene, x=value, y=cancer)) + 
 		geom_bar(position="dodge", stat="identity") +
-		geom_hline(yintercept = -log10(0.05), size=0.2, linetype="dashed") +
-		annotate('text', x = 1, y = 1.75, label = 'p = 0.05', size = 2) +
-		labs(title= 'Mutation frequency significance', x = '', y = expression(-log[10](p-value)) ) + 
+		geom_vline(xintercept = -log10(0.05), size=0.2, linetype="dashed") +
+		annotate('text', y = 1, x = 1.7, label = 'p = 0.05', size = 2.5) +
+		geom_vline(xintercept = -log10(0.001), size=0.2, linetype="dashed") +
+		annotate('text', y = 1, x = 3.5, label = 'p = 0.001', size = 2.5) +
+		labs(title= 'Mutation frequency significance', y = '', x = expression(-log[10](p-value)) ) + 
 		scale_fill_viridis(discrete = T, direction = -1) +
-		coord_flip() + theme_classic()
+		theme_classic()
 dev.off()
 
 png(file = '../plots_tmp/mutsig_rtks.png')
@@ -41,7 +43,7 @@ df %>%
 	ggplot(aes(fill=Gene, y=value, x=cancer)) + 
 		geom_bar(position="dodge", stat="identity") +
 		geom_hline(yintercept = -log10(0.05), size=0.2, linetype="dashed") +
-		annotate('text', x = 1, y = 1.75, label = 'p = 0.05', size = 2) +
+		annotate('text', x = 1, y = 1.75, label = 'p = 0.05', size = 3) +
 		labs(title= 'Mutation frequency significance', x = '', y = expression(-log[10](p-value)) ) + 
 		scale_fill_viridis(discrete = T, direction = -1) +
 		coord_flip() + theme_classic()
@@ -54,7 +56,7 @@ df %>%
 	ggplot(aes(fill=Gene, y=value, x=cancer)) + 
 		geom_bar(position="dodge", stat="identity") +
 		geom_hline(yintercept = -log10(0.05), size=0.2, linetype="dashed") +
-		annotate('text', x = 1, y = 1.1, label = 'p = 0.05', size = 2) +
+		annotate('text', x = 1, y = 1.2, label = 'p = 0.05', size = 3) +
 		labs(title= 'Mutation frequency significance', x = '', y = expression(-log[10](p-value)) ) + 
 		scale_fill_viridis(discrete = T, direction = -1) +
 		coord_flip() + theme_classic()
@@ -67,7 +69,7 @@ df %>%
 	ggplot(aes(fill=Gene, y=value, x=cancer)) + 
 		geom_bar(position="dodge", stat="identity") +
 		geom_hline(yintercept = -log10(0.05), size=0.2, linetype="dashed") +
-		annotate('text', x = 1, y = 1.1, label = 'p = 0.05', size = 2) +
+		annotate('text', x = 1, y = 1.2, label = 'p = 0.05', size = 3) +
 		labs(title= 'Mutation frequency significance', x = '', y = expression(-log[10](p-value)) ) + 
 		scale_fill_viridis(discrete = T, direction = -1) +
 		coord_flip() + theme_classic()
@@ -112,11 +114,26 @@ for (m in c('TCGA-KIRC', 'TCGA-COAD', 'TCGA-UCEC', 'TCGA-MESO', 'TCGA-STAD')){
 }
 
 
+# TMB vs mtor alt frequency
+
+png(file = '../plots_tmp/tmb_mtor_scatter.png', width = 600)
+cancer_names %>% 
+	mutate(med_TMB = unlist(lapply(mafs, med_tmb))[cancer_names$abbrev], 
+		   MTOR_alt_frac = mutRates['MTOR'][match(cancer_names$abbrev, rownames(mutRates)),]) %>%
+	tidyr::replace_na(list(med_TMB = 0, MTOR_alt_frac = 0))%>%
+	ggplot(aes(x = MTOR_alt_frac, y = med_TMB, col = brief)) + 
+		geom_point() +  
+		geom_text(aes(hjust=1.02,vjust=0.01,label=ifelse(cancer_names$abbrev %in% c('TCGA-KIRC', 'TCGA-COAD', 'TCGA-UCEC', 'TCGA-SKCM', 'TCGA-STAD'),cancer_names$brief,''))) +
+		labs(title= "MTOR alterations not linear with absolute TMB", x = 'MTOR fraction of samples altered (%)', y = 'Median TMB/MB') +
+		theme_classic() + theme(legend.position = "none")
+dev.off()
+
+
 # Subtyped renal
 
 renal_mutsig_p %>%
 	melt() %>%
-	mutate(Gene = rep(factor(goi, ordered = T), ncol(mutsig_p)),
+	mutate(Gene = rep(factor(goi, ordered = T), ncol(renal_mutsig_p)),
 		   cancer = renal_names$name[match(variable, renal_names$abbrev)],
 		   value = pmin(-log10(value), 5)) -> df
 
@@ -125,15 +142,16 @@ png(file = '../plots_tmp/mutsig_renal_subtypes.png')
 df %>% 
 	subset(Gene %in% c('PIK3CA', 'PTEN', 'MTOR')) %>%
 	mutate(cancer = ordered(cancer, levels = rev(unique(cancer[order(desc(value), desc(Gene))])))) %>%
-	ggplot(aes(fill=Gene, y=value, x=cancer)) + 
+	ggplot(aes(x=value, y="", fill = Gene)) + 
 		geom_bar(position="dodge", stat="identity") +
-		geom_hline(yintercept = -log10(0.05), size=0.2, linetype="dashed") +
-		annotate('text', x = 0.5, y = 1.6, label = 'p = 0.05', size = 3) +
-		geom_hline(yintercept = -log10(0.01), size=0.2, linetype="dashed") +
-		annotate('text', x = 0.5, y = 2.3, label = 'p = 0.01', size = 3) +
-		labs(title= 'Mutation frequency significance', x = '', y = expression(-log[10](p-value)) ) + 
+		geom_vline(xintercept = -log10(0.05), size=0.2, linetype="dashed") +
+		annotate('text', y = 1, x = 1.7, label = 'p = 0.05', size = 2.5) +
+		geom_vline(xintercept = -log10(0.001), size=0.2, linetype="dashed") +
+		annotate('text', y = 1, x = 3.5, label = 'p = 0.001', size = 2.5) +
+		labs(title= 'Mutation frequency significance', y = '', x = expression(-log[10](p-value)) ) +
 		scale_fill_viridis(discrete = T, direction = -1) +
-		coord_flip() + theme_classic() + theme(legend.position = 'top') -> p1
+		facet_wrap( ~ cancer, ncol = 1) + 
+		theme_classic() + theme(legend.position = 'top') -> p1
 p1
 dev.off()
 
@@ -149,7 +167,6 @@ renal_mutRates[c('MTOR', "PTEN", "PIK3CA")] %>%
 		geom_bar(stat = "identity", width = 1, position = position_fill()) + 
 		coord_polar("y", start=0) + 
 		scale_fill_manual(values=c(viridis(3)[3:1], "#d3d3d3")) + 
-		xlim(15, 20) + 
 		facet_wrap( ~ cancer + Gene, ncol = 3) +
 		theme_classic() + 
 		theme(strip.background = element_blank(), strip.text = element_blank(), 
@@ -165,7 +182,7 @@ for (m in names(renal_mafs)){
 	png(file = paste0('../plots_tmp/waterfall_', m, '.png'))
 	lil_m <- subsetMaf(renal_mafs[[m]], genes = c("MTOR", "PTEN", "PIK3CA"))
 	PlotOncogenicPathways(lil_m, pathways = "PI3K", fontSize = 1)
-	title(main = cancer_names$brief[match(m, cancer_names$abbrev)])
+	title(main = renal_names$brief[match(m, renal_names$abbrev)])
 	dev.off()
 }
 
@@ -173,7 +190,9 @@ for (m in names(renal_mafs)){
 # Venn (option)
 for (m in names(renal_mafs)){
 	venn.diagram(
-	  x = list(tsb(subsetMaf(renal_mafs[[m]], genes = c("PIK3CA"))), tsb(subsetMaf(renal_mafs[[m]], genes = c("PTEN"))), tsb(subsetMaf(renal_mafs[[m]], genes = c("MTOR"))) ),
+	  x = list(tsb(subsetMaf(renal_mafs[[m]], genes = c("PIK3CA"))), 
+	  		   tsb(subsetMaf(renal_mafs[[m]], genes = c("PTEN"))), 
+	  		   tsb(subsetMaf(renal_mafs[[m]], genes = c("MTOR"))) ),
 	  category.names = c("PIK3CA", "PTEN", "MTOR"),
 	  filename = paste0('../plots_tmp/venn_', m, '.png'),
 	  output = TRUE ,
@@ -228,7 +247,7 @@ venn.diagram(
 
 endo_mutsig_p %>%
 	melt() %>%
-	mutate(Gene = rep(factor(goi, ordered = T), ncol(mutsig_p)),
+	mutate(Gene = rep(factor(goi, ordered = T), ncol(endo_mutsig_p)),
 		   cancer = endo_names$name[match(variable, endo_names$abbrev)],
 		   value = pmin(-log10(value), 5)) -> df
 
@@ -240,8 +259,8 @@ df %>%
 		geom_bar(position="dodge", stat="identity") +
 		geom_hline(yintercept = -log10(0.05), size=0.2, linetype="dashed") +
 		annotate('text', x = 0.5, y = 1.75, label = 'p = 0.05', size = 3) +
-		geom_hline(yintercept = -log10(0.01), size=0.2, linetype="dashed") +
-		annotate('text', x = 0.5, y = 2, label = 'p = 0.01', size = 3) +
+		geom_hline(yintercept = -log10(0.001), size=0.2, linetype="dashed") +
+		annotate('text', x = 0.5, y = 3.5, label = 'p = 0.001', size = 3) +
 		labs(title= 'Mutation frequency significance', x = '', y = expression(-log[10](p-value)) ) + 
 		scale_fill_viridis(discrete = T, direction = -1) +
 		coord_flip() + theme_classic()
@@ -254,7 +273,7 @@ for (m in names(endo_mafs)){
 	png(file = paste0('../plots_tmp/waterfall_', m, '.png'))
 	lil_m <- subsetMaf(endo_mafs[[m]], genes = c("MTOR", "PTEN", "PIK3CA"))
 	PlotOncogenicPathways(lil_m, pathways = "PI3K", fontSize = 1)
-	title(main = cancer_names$brief[match(m, cancer_names$abbrev)])
+	title(main = endo_names$brief[match(m, endo_names$abbrev)])
 	dev.off()
 }
 		

@@ -120,7 +120,7 @@ for (c in names(endo_mafs)) {
 
 endo_sampleSizes <- sapply(endo_mafs, function(x){as.numeric(x@summary[ID %in% 'Samples', summary])})
 endo_mutRates <- sapply(endo_mafs, function(x){getGeneSummary(x)[match(goi, getGeneSummary(x)$Hugo_Symbol), MutatedSamples]})
-endo_mutRates <- as.data.frame(apply(mutRates, denom = sampleSizes, FUN = function(x, denom){ x / denom * 100}, MAR = 1))
+endo_mutRates <- as.data.frame(apply(endo_mutRates, denom = endo_sampleSizes, FUN = function(x, denom){ x / denom * 100}, MAR = 1))
 colnames(endo_mutRates) <- goi
 
 #endo_names$median_TMB <- lapply(endo_mafs, med_tmb)[endo_names$abbrev]

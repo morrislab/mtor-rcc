@@ -5,7 +5,7 @@ Analysis of TCGA/IMPACT datasets, and mTOR mutation status across cancer types
 
 ## Visualizations
 
-The most up-to-date output of this workflow is [available online](http://www.cs.toronto.edu/~charrigan/plots/a0320a8/)
+
 
 ## To reproduce
 

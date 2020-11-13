@@ -2,6 +2,7 @@ library(maftools)
 library(dplyr)
 library(ggplot2)
 library(reshape2)
+library(VennDiagram)
 library(viridis)
 
 # taken from rmd
@@ -14,6 +15,9 @@ goi <- factor(goi, levels = goi, ordered = T)
 
 # TMB calculations
 med_tmb <- function(m){ median(tmb(m)$total_perMB) }
+
+# get Tumor_Sample_Barcode
+tsb <- function(m){ m@data$Tumor_Sample_Barcode }
 
 
 # MC3
@@ -111,8 +115,8 @@ for (c in names(endo_mafs)) {
   mutsig_p[[c]] <- poi$p[match(goi, poi$gene)]
 }
 
-sampleSizes <- sapply(endo_mafs, function(x){as.numeric(x@summary[ID %in% 'Samples', summary])})
-mutRates <- sapply(endo_mafs, function(x){getGeneSummary(x)[match(goi, getGeneSummary(x)$Hugo_Symbol), MutatedSamples]})
-mutRates <- as.data.frame(apply(mutRates, denom = sampleSizes, FUN = function(x, denom){ x / denom * 100}, MAR = 1))
-colnames(mutRates) <- goi
+endo_sampleSizes <- sapply(endo_mafs, function(x){as.numeric(x@summary[ID %in% 'Samples', summary])})
+endo_mutRates <- sapply(endo_mafs, function(x){getGeneSummary(x)[match(goi, getGeneSummary(x)$Hugo_Symbol), MutatedSamples]})
+endo_mutRates <- as.data.frame(apply(mutRates, denom = sampleSizes, FUN = function(x, denom){ x / denom * 100}, MAR = 1))
+colnames(endo_mutRates) <- goi
 

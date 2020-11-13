@@ -10,15 +10,15 @@ png(file = '../plots_tmp/mutsig_mtor.png')
 df %>% 
 	subset(Gene %in% c('PIK3CA', 'PTEN', 'MTOR')) %>%
 	mutate(cancer = ordered(cancer, levels = rev(unique(cancer[order(desc(value), desc(Gene))])))) %>%
-	ggplot(aes(fill=Gene, y=value, x=cancer)) + 
+	ggplot(aes(fill=Gene, x=value, y=cancer)) + 
 		geom_bar(position="dodge", stat="identity") +
-		geom_hline(yintercept = -log10(0.05), size=0.2, linetype="dashed") +
-		annotate('text', x = 1, y = 1.7, label = 'p = 0.05', size = 2) +
-		geom_hline(yintercept = -log10(0.001), size=0.2, linetype="dashed") +
-		annotate('text', x = 1, y = 3.4, label = 'p = 0.001', size = 2) +
-		labs(title= 'Mutation frequency significance', x = '', y = expression(-log[10](p-value)) ) + 
+		geom_vline(xintercept = -log10(0.05), size=0.2, linetype="dashed") +
+		annotate('text', y = 1, x = 1.7, label = 'p = 0.05', size = 2) +
+		geom_vline(xintercept = -log10(0.001), size=0.2, linetype="dashed") +
+		annotate('text', y = 1, x = 3.4, label = 'p = 0.001', size = 2) +
+		labs(title= 'Mutation frequency significance', y = '', x = expression(-log[10](p-value)) ) + 
 		scale_fill_viridis(discrete = T, direction = -1) +
-		coord_flip() + theme_classic()
+		theme_classic()
 dev.off()
 
 png(file = '../plots_tmp/mutsig_drivers.png')
@@ -206,7 +206,7 @@ venn.diagram(
 endo_mutsig_p %>%
 	melt() %>%
 	mutate(Gene = rep(factor(goi, ordered = T), ncol(mutsig_p)),
-		   cancer = renal_names$name[match(variable, renal_names$abbrev)],
+		   cancer = endo_names$name[match(variable, endo_names$abbrev)],
 		   value = pmin(-log10(value), 5)) -> df
 
 png(file = '../plots_tmp/mutsig_endo_subtypes.png')

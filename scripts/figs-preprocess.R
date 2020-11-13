@@ -53,6 +53,8 @@ mutRates <- sapply(mafs, function(x){getGeneSummary(x)[match(goi, getGeneSummary
 mutRates <- as.data.frame(apply(mutRates, denom = sampleSizes, FUN = function(x, denom){ x / denom * 100}, MAR = 1))
 colnames(mutRates) <- goi
 
+cancer_names$median_TMB <- lapply(mafs, med_tmb)[cancer_names$abbrev]
+
 
 # renal subtyping
 
@@ -72,20 +74,22 @@ renal_names <- read.table(renal_params$names_tr, header = T, sep = "\t")
 # mutsigCV results
 res_dir <- renal_params$res_dir
 res_fns <- list.files(res_dir, pattern = "*.sig_genes.txt")
-mutsig_p <- data.frame(row.names = goi)
+renal_mutsig_p <- data.frame(row.names = goi)
 
 # set up mutsig dataframe for genes of interest
 for (c in names(renal_mafs)) {
   ord <- match(c, substr(res_fns, 1, nchar(res_fns)-14))
   mutsig_res <- read.table(paste0(res_dir, "/", res_fns[ord]), header=T)
   poi <- mutsig_res[mutsig_res$gene %in% goi, c(1,14)]
-  mutsig_p[[c]] <- poi$p[match(goi, poi$gene)]
+  renal_mutsig_p[[c]] <- poi$p[match(goi, poi$gene)]
 }
 
 renal_sampleSizes <- sapply(renal_mafs, function(x){as.numeric(x@summary[ID %in% 'Samples', summary])})
 renal_mutRates <- sapply(renal_mafs, function(x){getGeneSummary(x)[match(goi, getGeneSummary(x)$Hugo_Symbol), MutatedSamples]})
 renal_mutRates <- as.data.frame(apply(renal_mutRates, denom = renal_sampleSizes, FUN = function(x, denom){ x / denom * 100}, MAR = 1))
 colnames(renal_mutRates) <- goi
+
+renal_names$median_TMB <- lapply(renal_mafs, med_tmb)[renal_names$abbrev]
 
 #endometrial subtyping
 
@@ -105,14 +109,14 @@ endo_names <- read.table(endo_params$names_tr, header = T, sep = "\t")
 # mutsigCV results
 res_dir <- endo_params$res_dir
 res_fns <- list.files(res_dir, pattern = "*.sig_genes.txt")
-mutsig_p <- data.frame(row.names = goi)
+endo_mutsig_p <- data.frame(row.names = goi)
 
 # set up mutsig dataframe for genes of interest
 for (c in names(endo_mafs)) {
   ord <- match(c, substr(res_fns, 1, nchar(res_fns)-14))
   mutsig_res <- read.table(paste0(res_dir, "/", res_fns[ord]), header=T)
   poi <- mutsig_res[mutsig_res$gene %in% goi, c(1,14)]
-  mutsig_p[[c]] <- poi$p[match(goi, poi$gene)]
+  endo_mutsig_p[[c]] <- poi$p[match(goi, poi$gene)]
 }
 
 endo_sampleSizes <- sapply(endo_mafs, function(x){as.numeric(x@summary[ID %in% 'Samples', summary])})
@@ -120,3 +124,4 @@ endo_mutRates <- sapply(endo_mafs, function(x){getGeneSummary(x)[match(goi, getG
 endo_mutRates <- as.data.frame(apply(mutRates, denom = sampleSizes, FUN = function(x, denom){ x / denom * 100}, MAR = 1))
 colnames(endo_mutRates) <- goi
 
+endo_names$median_TMB <- lapply(endo_mafs, med_tmb)[endo_names$abbrev]

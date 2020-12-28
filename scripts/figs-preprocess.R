@@ -21,7 +21,7 @@ tsb <- function(m){ m@data$Tumor_Sample_Barcode }
 
 
 # MC3
-params = list(maf_dir = '../GDCdata/MC3',
+params = list(maf_dir = '../gdcData/MC3',
 			  res_dir = '../results/MC3',
 			  names_tr = "../ref_files/cancer_types.txt"
 			  )
@@ -57,7 +57,7 @@ colnames(mutRates) <- goi
 
 # renal subtyping
 
-renal_params = list(maf_dir = '../GDCdata/MC3-subtyped',
+renal_params = list(maf_dir = '../gdcData/MC3-subtyped',
 			  		res_dir = '../results/MC3-subtyped',
 			  		names_tr = "../ref_files/cancer_subtypes.txt"
 			  		)
@@ -92,7 +92,7 @@ colnames(renal_mutRates) <- goi
 
 #endometrial subtyping
 
-endo_params = list(maf_dir = '../GDCdata/MC3-subtyped',
+endo_params = list(maf_dir = '../gdcData/MC3-subtyped',
 			  		res_dir = '../results/MC3-subtyped',
 			  		names_tr = "../ref_files/cancer_subtypes.txt"
 			  		)

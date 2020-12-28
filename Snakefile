@@ -3,7 +3,7 @@ from glob import glob
 
 sample_set = "MC3-subtyped" #"harmonized" #"MC3"
 
-data_dir = os.path.join("GDCdata", sample_set)
+data_dir = os.path.join("gdcData", sample_set)
 results_dir = os.path.join("results", sample_set)
 summary_dir = os.path.join("summary", sample_set)
 

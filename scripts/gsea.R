@@ -15,11 +15,11 @@ library("org.Hs.eg.db", character.only = TRUE)
 require(grid)
 require(png)
 
-prepDE <- function(proj_name, setdiff = T, count_thresh = 10, maf_fn = sprintf("GDCdata/MC3/%s.mutSig.maf", proj_name), 
-                   counts_fn = sprintf("GDCdata/HTseq/%s_counts.rda", proj_name)){
+prepDE <- function(proj_name, setdiff = T, count_thresh = 10, maf_fn = sprintf("gdcData/MC3/%s.mutSig.maf", proj_name), 
+                   counts_fn = sprintf("gdcData/HTseq/%s_counts.rda", proj_name)){
   
-  #maf_fn = sprintf("GDCdata/MC3-subtyped/%s.mutSig.maf", proj_name)
-  #counts_fn = sprintf("GDCdata/HTseq/%s_counts.rda", proj_name)
+  #maf_fn = sprintf("gdcData/MC3-subtyped/%s.mutSig.maf", proj_name)
+  #counts_fn = sprintf("gdcData/HTseq/%s_counts.rda", proj_name)
 
   if(!file.exists(counts_fn)){
   	counts_query <- GDCquery(project = proj_name, 

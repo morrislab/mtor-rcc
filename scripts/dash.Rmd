@@ -8,7 +8,7 @@ output:
     source_code: embed
     theme: lumen
 params:
-  maf_dir: "../GDCdata/harmonized"
+  maf_dir: "../gdcData/harmonized"
   res_dir: "../results/harmonized"
   names_tr: "../ref_files/cancer_types.txt"
 ---
@@ -151,8 +151,8 @@ DE analysis includes all 4 mRNA subtypes.
 
 ```{r kirc, eval = T}
 proj_name <- "TCGA-KIRC"
-dea <- prepDE(proj_name, setdiff = F, count_thresh = 50, maf_fn = sprintf("../GDCdata/MC3/%s.mutSig.maf", proj_name), 
-                   counts_fn = sprintf("../GDCdata/HTseq/%s_counts.rda", proj_name))
+dea <- prepDE(proj_name, setdiff = F, count_thresh = 50, maf_fn = sprintf("../gdcData/MC3/%s.mutSig.maf", proj_name), 
+                   counts_fn = sprintf("../gdcData/HTseq/%s_counts.rda", proj_name))
 ```
 
 Row
@@ -193,8 +193,8 @@ DE analysis is restricted to MSI subtype only.
 
 ```{r ucec, eval = T}
 proj_name <- "TCGA-UCEC"
-dea <- prepDE(proj_name, setdiff = F, count_thresh = 100, maf_fn = sprintf("../GDCdata/MC3-subtyped/%s.UCEC.MSI.mutSig.maf", proj_name), 
-                   counts_fn = sprintf("../GDCdata/HTseq/%s_counts.rda", proj_name))
+dea <- prepDE(proj_name, setdiff = F, count_thresh = 100, maf_fn = sprintf("../gdcData/MC3-subtyped/%s.UCEC.MSI.mutSig.maf", proj_name), 
+                   counts_fn = sprintf("../gdcData/HTseq/%s_counts.rda", proj_name))
 ```
 
 Row
@@ -234,8 +234,8 @@ DE analysis is restricted to MSI subtype only.
 
 ```{r coad, eval = T}
 proj_name <- "TCGA-COAD"
-dea <- prepDE(proj_name, setdiff = F, count_thresh = 50, maf_fn = sprintf("../GDCdata/MC3-subtyped/%s.GI.MSI.mutSig.maf", proj_name), 
-                   counts_fn = sprintf("../GDCdata/HTseq/%s_counts.rda", proj_name))
+dea <- prepDE(proj_name, setdiff = F, count_thresh = 50, maf_fn = sprintf("../gdcData/MC3-subtyped/%s.GI.MSI.mutSig.maf", proj_name), 
+                   counts_fn = sprintf("../gdcData/HTseq/%s_counts.rda", proj_name))
 ```
 
 Row

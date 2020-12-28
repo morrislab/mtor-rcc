@@ -53,7 +53,7 @@ mutRates <- sapply(mafs, function(x){getGeneSummary(x)[match(goi, getGeneSummary
 mutRates <- as.data.frame(apply(mutRates, denom = sampleSizes, FUN = function(x, denom){ x / denom * 100}, MAR = 1))
 colnames(mutRates) <- goi
 
-
+#cancer_names$median_TMB <- lapply(cancer_mafs, med_tmb)[cancer_names$abbrev]
 
 # renal subtyping
 

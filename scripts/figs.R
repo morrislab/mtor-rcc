@@ -6,20 +6,53 @@ mutsig_p %>%
 		   cancer = cancer_names$brief[match(variable, cancer_names$abbrev)],
 		   value = pmin(-log10(value), 5)) -> df
 
+df %>% 
+	subset(Gene %in% c('PIK3CA', 'PTEN', 'MTOR')) %>%
+	arrange(desc(value), desc(Gene)) %>%
+	select(cancer) %>% unique() %>% unlist() -> lvls
+
+# vanilla
 png(file = '../plots_tmp/mutsig_mtor.png')
 df %>% 
 	subset(Gene %in% c('PIK3CA', 'PTEN', 'MTOR')) %>%
-	mutate(cancer = ordered(cancer, levels = rev(unique(cancer[order(desc(value), desc(Gene))])))) %>%
-	ggplot(aes(fill=Gene, x=value, y=cancer)) + 
+	mutate(cancer = ordered(cancer, levels = rev(lvls))) %>%
+	ggplot(aes(x=value, y=cancer, fill = Gene)) + 
 		geom_bar(position="dodge", stat="identity") +
 		geom_vline(xintercept = -log10(0.05), size=0.2, linetype="dashed") +
 		annotate('text', y = 1, x = 1.7, label = 'p = 0.05', size = 2.5) +
 		geom_vline(xintercept = -log10(0.001), size=0.2, linetype="dashed") +
 		annotate('text', y = 1, x = 3.5, label = 'p = 0.001', size = 2.5) +
-		labs(title= 'Mutation frequency significance', y = '', x = expression(-log[10](p-value)) ) + 
+		labs(title= 'Mutation frequency significance', y = '', x = expression(-log[10](p-value)) ) +
 		scale_fill_viridis(discrete = T, direction = -1) +
-		theme_classic()
+		#facet_wrap( ~ cancer, ncol = 1) + 
+		theme_classic()  -> p1
+p1
 dev.off()
+
+# with pies
+png(file = '../plots_tmp/mutsig_mtor_pies.png', width = 800)
+mutRates[c('MTOR', "PTEN", "PIK3CA")] %>% 
+	tibble::rownames_to_column(var = "abbrev") %>% 
+	melt() %>% rename(Gene = variable, frac = value) %>%
+	mutate(cancer = ordered(cancer_names$brief[match(abbrev, cancer_names$abbrev)], levels = lvls), antifrac = 100-frac) %>%
+	melt() %>%tidyr::replace_na(list(value = 0)) %>%
+	mutate(variable = factor(ifelse(variable == "antifrac", "antifrac", Gene))) %>%
+	ggplot(aes(x = 0.5, y=value, fill=variable)) + 
+		geom_bar(stat = "identity", width = 1, position = position_fill()) + 
+		coord_polar("y", start=0) + 
+		scale_fill_manual(values=c(viridis(3)[3:1], "#d3d3d3")) + 
+		facet_wrap(~cancer+Gene, ncol = 3) +
+		labs(title= 'Fraction of samples mutated') +
+		theme_minimal() + labs(x = "", y = "") + 
+		theme(strip.background = element_blank(), strip.text = element_blank(), 
+			  legend.position = "none", panel.grid  = element_blank(),
+			  panel.spacing = unit(-2, "lines"), 
+        	  axis.ticks = element_blank(), axis.text = element_blank()) +
+        scale_x_continuous(limits = c(0, 3)) -> p2
+egg::ggarrange(p1, p2, ncol =2, widths = c(6,1))
+dev.off()
+
+# other mutsig plots
 
 png(file = '../plots_tmp/mutsig_drivers.png')
 df %>% 

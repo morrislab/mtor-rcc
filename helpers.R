@@ -21,10 +21,10 @@ tsb <- function(m){ m@data$Tumor_Sample_Barcode }
 
 
 # MC3
-params = list(maf_dir = '../gdcData/MC3',
-			  res_dir = '../results/MC3',
-			  names_tr = "../ref_files/cancer_types.txt"
-			  )
+params = list(maf_dir = '~/data/mc3-mafs',
+              res_dir = '~/data/mutsig-mc3',
+              names_tr = "cancer_types.txt"
+              )
 
 # mafs
 maf_dir <- params$maf_dir
@@ -38,14 +38,15 @@ cancer_names <- read.table(params$names_tr, header = T, sep = "\t")
 # mutsigCV results
 res_dir <- params$res_dir
 res_fns <- list.files(res_dir, pattern = "*.sig_genes.txt")
-mutsig_p <- data.frame(row.names = goi)
+mutsig_p <- mutsig_q <- data.frame(row.names = goi)
 
 # set up mutsig dataframe for genes of interest
 for (c in names(mafs)) {
   ord <- match(c, substr(res_fns, 1, nchar(res_fns)-14))
   mutsig_res <- read.table(paste0(res_dir, "/", res_fns[ord]), header=T)
-  poi <- mutsig_res[mutsig_res$gene %in% goi, c(1,14)]
+  poi <- mutsig_res[mutsig_res$gene %in% goi, c(1,14,15)]
   mutsig_p[[c]] <- poi$p[match(goi, poi$gene)]
+  mutsig_q[[c]] <- poi$q[match(goi, poi$gene)]
 }
 
 sampleSizes <- sapply(mafs, function(x){as.numeric(x@summary[ID %in% 'Samples', summary])})
@@ -58,9 +59,9 @@ colnames(mutRates) <- goi
 # renal subtyping
 
 renal_params = list(maf_dir = '../gdcData/MC3-subtyped',
-			  		res_dir = '../results/MC3-subtyped',
-			  		names_tr = "../ref_files/cancer_subtypes.txt"
-			  		)
+            res_dir = '../results/MC3-subtyped',
+            names_tr = "../ref_files/cancer_subtypes.txt"
+            )
 
 maf_dir <- renal_params$maf_dir
 maf_fns <- list.files(maf_dir, pattern = "^TCGA-KIRC*")
@@ -93,9 +94,9 @@ colnames(renal_mutRates) <- goi
 #endometrial subtyping
 
 endo_params = list(maf_dir = '../gdcData/MC3-subtyped',
-			  		res_dir = '../results/MC3-subtyped',
-			  		names_tr = "../ref_files/cancer_subtypes.txt"
-			  		)
+            res_dir = '../results/MC3-subtyped',
+            names_tr = "../ref_files/cancer_subtypes.txt"
+            )
 
 maf_dir <- endo_params$maf_dir
 maf_fns <- list.files(maf_dir, pattern = "^TCGA-UCEC*")
@@ -124,3 +125,4 @@ endo_mutRates <- as.data.frame(apply(endo_mutRates, denom = endo_sampleSizes, FU
 colnames(endo_mutRates) <- goi
 
 #endo_names$median_TMB <- lapply(endo_mafs, med_tmb)[endo_names$abbrev]
+

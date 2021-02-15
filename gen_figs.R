@@ -6,8 +6,9 @@
 
 data_dir <- "~/data/mc3-mafs"
 if(!dir.exists(data_dir)){dir.create(data_dir, recursive = TRUE)}
+abbrevs <- gsub("TCGA-", "", (read.table('cancer_types.txt', header = T, sep = "\t")$abbrev))
 
-mafs <- TCGAmutations::tcga_load(c('KIRC', 'UCEC', 'STAD', 'COAD'))
+mafs <- TCGAmutations::tcga_load(abbrevs)
 for (m in names(mafs)){
     maftools::prepareMutSig(mafs[[m]], file.path(data_dir, paste0('TCGA-',m)))
 }
@@ -27,16 +28,37 @@ if(!file.exists(data_dest)){
 	download.file(data_source, dest = data_dest)
 }
 
-# select target files
+# select CDS files only
 fns <- untar(data_dest, list=TRUE)
 sel <- grepl(fns, pattern = "CDS.combined_p_values.automatic_method_removal.txt")
-sel <- sel & grepl(fns, pattern = "Kidney-RCC|Panc-Endocrine|Uterus-AdenoCa|ColoRect-AdenoCa|Stomach-AdenoCa")
-fns <- fns[sel]
-
-untar(data_dest, files = fns, exdir = path.expand(data_dir))
+#sel <- sel & grepl(fns, pattern = "Kidney-RCC|Panc-Endocrine|Uterus-AdenoCa|ColoRect-AdenoCa|Stomach-AdenoCa")
+untar(data_dest, files = fns[sel], exdir = path.expand(data_dir))
 
 # plot for each study result
-for(fn in file.path(data_dir, fns)){
-	res <- read.table(fn, header = T)	
-}
+source('prep_mutsigp.R')
+source('prep_pcawgp.R')
 
+source('figs.R')
+setwd('plots')
+
+pdf('cait_mutsig_p.pdf')
+p_plots(mutsig_p, cancer_names)
+dev.off()
+
+pdf('cait_mutsig_q.pdf')
+p_plots(mutsig_q, cancer_names)
+dev.off()
+
+pdf('pcawg_mutsig_p.pdf')
+p_plots(pcawg_p, data_frame(abbrev = pcawg_names, brief = pcawg_names))
+dev.off()
+
+pdf('pcawg_trimmed-brown_p.pdf')
+p_plots(pcawg_b, data_frame(abbrev = pcawg_names, brief = pcawg_names))
+dev.off()
+
+pdf('tmb_scatter.pdf')
+tmb_plot(cancer_names)
+dev.off()
+
+setwd('..')

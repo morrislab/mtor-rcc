@@ -39,26 +39,24 @@ source('prep_mutsigp.R')
 source('prep_pcawgp.R')
 
 source('figs.R')
-setwd('plots')
 
-pdf('cait_mutsig_p.pdf')
+pdf('plots/cait_mutsig_p.pdf')
 p_plots(mutsig_p, cancer_names)
 dev.off()
 
-pdf('cait_mutsig_q.pdf')
+pdf('plots/cait_mutsig_q.pdf')
 p_plots(mutsig_q, cancer_names)
 dev.off()
 
-pdf('pcawg_mutsig_p.pdf')
+pdf('plots/pcawg_mutsig_p.pdf')
 p_plots(pcawg_p, data_frame(abbrev = pcawg_names, brief = pcawg_names))
 dev.off()
 
-pdf('pcawg_trimmed-brown_p.pdf')
+pdf('plots/pcawg_trimmed-brown_p.pdf')
 p_plots(pcawg_b, data_frame(abbrev = pcawg_names, brief = pcawg_names))
 dev.off()
 
-pdf('tmb_scatter.pdf')
+pdf('plots/tmb_scatter.pdf')
 tmb_plot(cancer_names)
 dev.off()
 
-setwd('..')

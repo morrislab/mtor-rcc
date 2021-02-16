@@ -1,5 +1,16 @@
-#source('prep_mutsigp.R')
 
+
+# https://drsimonj.svbtle.com/creating-corporate-colour-palettes-for-ggplot2
+ch_palettes <- list(
+  `flat` = cividis(30)[1:20],
+  `hl` = c("#d11141", cividis(50)[5:20])
+)
+
+ch_pal <- function(palette = "hl", reverse = FALSE, ...) {
+  pal <- ch_palettes[[palette]]
+  if (reverse) pal <- rev(pal)
+  colorRampPalette(pal, ...)
+}
 
 
 p_plots <- function(mutsig_p, cancer_names){ 
@@ -28,13 +39,14 @@ p_plots <- function(mutsig_p, cancer_names){
 			geom_vline(xintercept = -log10(0.001), size=0.2, linetype="dashed") +
 			annotate('text', y = 1, x = 3.5, label = 'p = 0.001', size = 3.5) +
 			labs(title= 'Mutation frequency significance', y = '', x = expression(-log[10](p-value)) ) +
-			scale_fill_viridis(discrete = T, direction = -1, option = "D", end = 0.7) +
 			#facet_wrap( ~ cancer, ncol = 1) + 
+			#scale_fill_viridis(discrete = T, direction = -1, option = "D", end = 0.7) +
+			discrete_scale("fill", 'hl', palette = ch_pal()) +
 			theme_classic() + 
 			theme(axis.text.y = element_text(colour = "black", size = 10)) -> p1
 
 	#dev.off()
-	
+
 	# with pies
 	#png(file = '../plots_tmp/mutsig_mtor_pies.png', width = 800)
 	#mutRates[c('MTOR', "PTEN", "PIK3CA")] %>% 
@@ -71,12 +83,13 @@ p_plots <- function(mutsig_p, cancer_names){
 			geom_vline(xintercept = -log10(0.001), size=0.2, linetype="dashed") +
 			annotate('text', y = 1, x = 3.5, label = 'p = 0.001', size = 3.5) +
 			labs(title= 'Mutation frequency significance', y = '', x = expression(-log[10](p-value)) ) + 
-			scale_fill_viridis(discrete = T, direction = -1, option = "E", end = 0.8) +
-			#scale_fill_discrete() + 
+			#scale_fill_viridis(discrete = T, direction = -1, option = "E", end = 0.8) +
+			discrete_scale("fill", 'hl', palette = ch_pal('flat')) +
 			theme_classic()+ 
 			theme(axis.text.y = element_text(colour = "black", size = 10)) -> p2
 
 	#dev.off()
+
 	
 	#png(file = '../plots_tmp/mutsig_rtks.png')
 	df %>% 
@@ -89,11 +102,13 @@ p_plots <- function(mutsig_p, cancer_names){
 			geom_hline(yintercept = -log10(0.001), size=0.3, linetype="dashed") +
 			annotate('text', x = 1, y = 3.1, label = 'p = 0.001', size = 3.5) +
 			labs(title= 'Mutation frequency significance', x = '', y = expression(-log[10](p-value)) ) + 
-			scale_fill_viridis(discrete = T, direction = -1, option = "E", end = 0.8) +
-			coord_flip() + theme_classic() + xlim(0, 5) +
+			#scale_fill_viridis(discrete = T, direction = -1, option = "E", end = 0.8) +
+			discrete_scale("fill", 'hl', palette = ch_pal('flat')) +
+			coord_flip() + theme_classic() + ylim(0, 5) +
 			theme(axis.text.y = element_text(colour = "black", size = 10)) -> p3
 
 	#dev.off()
+	
 	
 	#png(file = '../plots_tmp/mutsig_gator1.png')
 	df %>% 
@@ -106,8 +121,9 @@ p_plots <- function(mutsig_p, cancer_names){
 			geom_hline(yintercept = -log10(0.001), size=0.2, linetype="dashed") + 
 			annotate('text', x = 1, y = 2.5, label = 'p = 0.001', size = 3.5) +
 			labs(title= 'Mutation frequency significance', x = '', y = expression(-log[10](p-value)) ) + 
-			scale_fill_viridis(discrete = T, direction = -1, option = "E", end = 0.8) +
-			coord_flip() + theme_classic() + xlim(0, 5) +
+			#scale_fill_viridis(discrete = T, direction = -1, option = "E", end = 0.8) +
+			discrete_scale("fill", 'hl', palette = ch_pal('flat')) +
+			coord_flip() + theme_classic() + ylim(0, 5) +
 			theme(axis.text.y = element_text(colour = "black", size = 10)) -> p4
 	#dev.off()
 	
@@ -122,10 +138,12 @@ p_plots <- function(mutsig_p, cancer_names){
 			geom_hline(yintercept = -log10(0.001), size=0.2, linetype="dashed") +
 			annotate('text', x = 1, y = 3, label = 'p = 0.001', size = 3.5) +
 			labs(title= 'Mutation frequency significance', x = '', y = expression(-log[10](p-value)) ) + 
-			scale_fill_viridis(discrete = T, direction = -1, option = "E", end = 0.8) +
-			coord_flip() + theme_classic() + xlim(0, 5) +
+			#scale_fill_viridis(discrete = T, direction = -1, option = "E", end = 0.8) +
+			discrete_scale("fill", 'hl', palette = ch_pal('flat')) +
+			coord_flip() + theme_classic() + ylim(0, 5) +
 			theme(axis.text.y = element_text(colour = "black", size = 10)) -> p5
 	#dev.off()
+
 
 	print(p1)
 	print(p2)

@@ -13,7 +13,10 @@ ch_pal <- function(palette = "hl", reverse = FALSE, ...) {
 }
 
 
-p_plots <- function(mutsig_p, cancer_names){ 
+p_plots <- function(mutsig_p, cancer_names, main = 'Mutation frequency significance', pq = p){ 
+
+	if(pq == 'p'){xlab = expression(-log[10](p-value))
+	}else{xlab = expression(-log[10](q-value))}
 
 	mutsig_p %>%
 		melt() %>%
@@ -35,10 +38,10 @@ p_plots <- function(mutsig_p, cancer_names){
 		ggplot(aes(x=value, y=cancer, fill = Gene)) + 
 			geom_bar(position="dodge", stat="identity") +
 			geom_vline(xintercept = -log10(0.05), size=0.2, linetype="dashed") +
-			annotate('text', y = 1, x = 1.7, label = 'p = 0.05', size = 3.5) +
+			annotate('text', y = 1, x = 1.75, label = paste0(pq, ' = 0.05'), size = 3.5) +
 			geom_vline(xintercept = -log10(0.001), size=0.2, linetype="dashed") +
-			annotate('text', y = 1, x = 3.5, label = 'p = 0.001', size = 3.5) +
-			labs(title= 'Mutation frequency significance', y = '', x = expression(-log[10](p-value)) ) +
+			annotate('text', y = 1, x = 3.5, label = paste0(pq, ' = 0.001'), size = 3.5) +
+			labs(title= main, y = '', x = xlab ) +
 			#facet_wrap( ~ cancer, ncol = 1) + 
 			#scale_fill_viridis(discrete = T, direction = -1, option = "D", end = 0.7) +
 			discrete_scale("fill", 'hl', palette = ch_pal()) +
@@ -75,14 +78,14 @@ p_plots <- function(mutsig_p, cancer_names){
 	#png(file = '../plots_tmp/mutsig_drivers.png')
 	df %>% 
 		subset(Gene %in% c("TP53", "KRAS", "BRCA1", "BRCA2", "TTN")) %>%
-		mutate(cancer = ordered(cancer, levels = rev(unique(cancer[order(desc(value), desc(Gene))])))) %>%
+		mutate(cancer = ordered(cancer, levels = rev(lvls))) %>%
 		ggplot(aes(fill=Gene, x=value, y=cancer)) + 
 			geom_bar(position="dodge", stat="identity") +
 			geom_vline(xintercept = -log10(0.05), size=0.2, linetype="dashed") +
 			annotate('text', y = 1, x = 1.7, label = 'p = 0.05', size = 3.5) +
 			geom_vline(xintercept = -log10(0.001), size=0.2, linetype="dashed") +
 			annotate('text', y = 1, x = 3.5, label = 'p = 0.001', size = 3.5) +
-			labs(title= 'Mutation frequency significance', y = '', x = expression(-log[10](p-value)) ) + 
+			labs(title= main, y = '', x = xlab ) + 
 			#scale_fill_viridis(discrete = T, direction = -1, option = "E", end = 0.8) +
 			discrete_scale("fill", 'hl', palette = ch_pal('flat')) +
 			theme_classic()+ 
@@ -90,58 +93,39 @@ p_plots <- function(mutsig_p, cancer_names){
 
 	#dev.off()
 
+	viz <- list(geom_bar(position="dodge", stat="identity"),
+				geom_hline(yintercept = -log10(0.05), size=0.3, linetype="dashed"),
+				annotate('text', x = 1, y = 1.75, label = 'p = 0.05', size = 3.5),
+				geom_hline(yintercept = -log10(0.001), size=0.3, linetype="dashed"),
+				annotate('text', x = 1, y = 3.5, label = 'p = 0.001', size = 3.5),
+				labs(title= main, x = '', y = xlab ),
+				discrete_scale("fill", 'hl', palette = ch_pal('flat')),
+				coord_flip(), theme_classic(), ylim(0, 5),
+				theme(axis.text.y = element_text(colour = "black", size = 10))
+			   )
+
 	
 	#png(file = '../plots_tmp/mutsig_rtks.png')
 	df %>% 
 		subset(Gene %in% c("ERBB2", "EGFR")) %>%
-		mutate(cancer = ordered(cancer, levels = rev(unique(cancer[order(desc(value), desc(Gene))])))) %>%
-		ggplot(aes(fill=Gene, y=value, x=cancer)) + 
-			geom_bar(position="dodge", stat="identity") +
-			geom_hline(yintercept = -log10(0.05), size=0.3, linetype="dashed") +
-			annotate('text', x = 1, y = 1.75, label = 'p = 0.05', size = 3.5) +
-			geom_hline(yintercept = -log10(0.001), size=0.3, linetype="dashed") +
-			annotate('text', x = 1, y = 3.1, label = 'p = 0.001', size = 3.5) +
-			labs(title= 'Mutation frequency significance', x = '', y = expression(-log[10](p-value)) ) + 
-			#scale_fill_viridis(discrete = T, direction = -1, option = "E", end = 0.8) +
-			discrete_scale("fill", 'hl', palette = ch_pal('flat')) +
-			coord_flip() + theme_classic() + ylim(0, 5) +
-			theme(axis.text.y = element_text(colour = "black", size = 10)) -> p3
-
+		mutate(cancer = ordered(cancer, levels = rev(lvls))) %>%
+		ggplot(aes(fill=Gene, y=value, x=cancer)) + viz -> p3
+			
 	#dev.off()
 	
 	
 	#png(file = '../plots_tmp/mutsig_gator1.png')
 	df %>% 
 		subset(Gene %in% c("DEPDC5", "NPRL2", "NPRL3")) %>%
-		mutate(cancer = ordered(cancer, levels = rev(unique(cancer[order(desc(value), desc(Gene))])))) %>%
-		ggplot(aes(fill=Gene, y=value, x=cancer)) + 
-			geom_bar(position="dodge", stat="identity") +
-			geom_hline(yintercept = -log10(0.05), size=0.2, linetype="dashed") +
-			annotate('text', x = 1, y = 1.2, label = 'p = 0.05', size = 3.5) +
-			geom_hline(yintercept = -log10(0.001), size=0.2, linetype="dashed") + 
-			annotate('text', x = 1, y = 2.5, label = 'p = 0.001', size = 3.5) +
-			labs(title= 'Mutation frequency significance', x = '', y = expression(-log[10](p-value)) ) + 
-			#scale_fill_viridis(discrete = T, direction = -1, option = "E", end = 0.8) +
-			discrete_scale("fill", 'hl', palette = ch_pal('flat')) +
-			coord_flip() + theme_classic() + ylim(0, 5) +
-			theme(axis.text.y = element_text(colour = "black", size = 10)) -> p4
+		mutate(cancer = ordered(cancer, levels = rev(lvls))) %>%
+		ggplot(aes(fill=Gene, y=value, x=cancer)) + viz  -> p4
 	#dev.off()
 	
 	#png(file = '../plots_tmp/mutsig_gator2.png')
 	df %>% 
 		subset(Gene %in% c("MIOS", "SEH1L", "SEC13", "WDR24", "WDR59"))%>%
-		mutate(cancer = ordered(cancer, levels = rev(unique(cancer[order(desc(value), desc(Gene))])))) %>%
-		ggplot(aes(fill=Gene, y=value, x=cancer)) + 
-			geom_bar(position="dodge", stat="identity") +
-			geom_hline(yintercept = -log10(0.05), size=0.2, linetype="dashed") +
-			annotate('text', x = 1, y = 1.2, label = 'p = 0.05', size = 3.5) +
-			geom_hline(yintercept = -log10(0.001), size=0.2, linetype="dashed") +
-			annotate('text', x = 1, y = 3, label = 'p = 0.001', size = 3.5) +
-			labs(title= 'Mutation frequency significance', x = '', y = expression(-log[10](p-value)) ) + 
-			#scale_fill_viridis(discrete = T, direction = -1, option = "E", end = 0.8) +
-			discrete_scale("fill", 'hl', palette = ch_pal('flat')) +
-			coord_flip() + theme_classic() + ylim(0, 5) +
-			theme(axis.text.y = element_text(colour = "black", size = 10)) -> p5
+		mutate(cancer = ordered(cancer, levels = rev(lvls))) %>%
+		ggplot(aes(fill=Gene, y=value, x=cancer)) + viz  -> p5
 	#dev.off()
 
 

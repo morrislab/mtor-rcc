@@ -35,25 +35,27 @@ sel <- grepl(fns, pattern = "CDS.combined_p_values.automatic_method_removal.txt"
 untar(data_dest, files = fns[sel], exdir = path.expand(data_dir))
 
 # plot for each study result
-source('prep_mutsigp.R')
-source('prep_pcawgp.R')
+if(!file.exists('mutsigp.Rdata')){source('prep_mutsigp.R')}
+if(!file.exists('pcawgp.Rdata')){source('prep_pcawgp.R')}
 
 source('figs.R')
 
 pdf('plots/cait_mutsig_p.pdf')
-p_plots(mutsig_p, cancer_names)
+p_plots(mutsig_p, cancer_names, main = 'MutSigCV p-values', pq = p)
 dev.off()
 
 pdf('plots/cait_mutsig_q.pdf')
-p_plots(mutsig_q, cancer_names)
+p_plots(mutsig_q, cancer_names, main = 'MutSigCV q-values', pq = q)
 dev.off()
 
 pdf('plots/pcawg_mutsig_p.pdf')
-p_plots(pcawg_p, data_frame(abbrev = pcawg_names, brief = pcawg_names))
+p_plots(pcawg_p, data_frame(abbrev = pcawg_names, brief = pcawg_names), 
+	main = 'PCAWG-Driver Working Group MutSig p-values', pq = p)
 dev.off()
 
 pdf('plots/pcawg_trimmed-brown_p.pdf')
-p_plots(pcawg_b, data_frame(abbrev = pcawg_names, brief = pcawg_names))
+p_plots(pcawg_b, data_frame(abbrev = pcawg_names, brief = pcawg_names),
+	main = 'PCAWG-Driver Working Group Brown Test q-values', pq = q)
 dev.off()
 
 pdf('plots/tmb_scatter.pdf')

@@ -5,6 +5,7 @@ library(reshape2)
 library(VennDiagram)
 library(viridis)
 
+
 # taken from rmd
 
 # genes of interest
@@ -68,4 +69,4 @@ mutRates <- sapply(mafs, function(x){getGeneSummary(x)[match(goi, getGeneSummary
 mutRates <- as.data.frame(apply(mutRates, denom = sampleSizes, FUN = function(x, denom){ x / denom * 100}, MAR = 1))
 colnames(mutRates) <- goi
 
-save(file = 'mutsigp.Rdata', mutsig_p, mutsig_q)
+save(file = 'mutsigp.Rdata', mutsig_p, mutsig_q, mutRates)

@@ -8,10 +8,10 @@ data_dir <- "~/data/mc3-mafs"
 if(!dir.exists(data_dir)){dir.create(data_dir, recursive = TRUE)}
 abbrevs <- gsub("TCGA-", "", (read.table('cancer_types.txt', header = T, sep = "\t")$abbrev))
 
-mafs <- TCGAmutations::tcga_load(abbrevs)
-for (m in names(mafs)){
-    maftools::prepareMutSig(mafs[[m]], file.path(data_dir, paste0('TCGA-',m)))
-}
+#mafs <- TCGAmutations::tcga_load(abbrevs)
+#for (m in names(mafs)){
+#    maftools::prepareMutSig(mafs[[m]], file.path(data_dir, paste0('TCGA-',m)))
+#}
 
 ## PCAWG driver data
 # retrieved from icgc api
@@ -38,27 +38,49 @@ untar(data_dest, files = fns[sel], exdir = path.expand(data_dir))
 if(!file.exists('mutsigp.Rdata')){source('prep_mutsigp.R')}
 if(!file.exists('pcawgp.Rdata')){source('prep_pcawgp.R')}
 
+load('mutsigp.Rdata')
+load('pcawgp.Rdata')
+
 source('figs.R')
 
+print('plotting')
+
 pdf('plots/cait_mutsig_p.pdf')
-p_plots(mutsig_p, cancer_names, main = 'MutSigCV p-values', pq = p)
+p_plots(mutsig_p, cancer_names, main = 'MutSigCV p-values', pq = 'p')
 dev.off()
 
 pdf('plots/cait_mutsig_q.pdf')
-p_plots(mutsig_q, cancer_names, main = 'MutSigCV q-values', pq = q)
+p_plots(mutsig_q, cancer_names, main = 'MutSigCV q-values', pq = 'q')
 dev.off()
 
 pdf('plots/pcawg_mutsig_p.pdf')
 p_plots(pcawg_p, data_frame(abbrev = pcawg_names, brief = pcawg_names), 
-	main = 'PCAWG-Driver Working Group MutSig p-values', pq = p)
+	main = 'PCAWG-Driver Working Group MutSig p-values', pq = 'p')
 dev.off()
 
 pdf('plots/pcawg_trimmed-brown_p.pdf')
 p_plots(pcawg_b, data_frame(abbrev = pcawg_names, brief = pcawg_names),
-	main = 'PCAWG-Driver Working Group Brown Test q-values', pq = q)
+	main = 'PCAWG-Driver Working Group Brown Test q-values', pq = 'q')
 dev.off()
 
 pdf('plots/tmb_scatter.pdf')
-tmb_plot(cancer_names)
+tmb_plot(mutRates, cancer_names, main = "MTOR Alterations not Linear with Absolute TMB")
+tmb_plot(mutRates[rownames(mutRates) != 'TCGA-SKCM',], cancer_names, main = "MTOR Alterations not Linear with Absolute TMB (Melanoma excluded)")
+tmb_plot(mutRates, cancer_names, show_na = F, "MTOR Alterations not Linear with Absolute TMB")
+tmb_plot(mutRates[rownames(mutRates) != 'TCGA-SKCM',], show_na = F, cancer_names, "MTOR Alterations not Linear with Absolute TMB (Melanoma excluded)")
 dev.off()
+
+
+pdf('plots/co-mut_venns.pdf')
+venn_pik3ca_pten_mtor('TCGA-KIRC', main = 'Kidney RCC Mutation Co-occurance (n samples in cohort)')
+grid.newpage()
+venn_pik3ca_pten_mtor('TCGA-UCEC', main = 'Kidney RCC Mutation Co-occurance (n samples in cohort)')
+grid.newpage()
+somaticInteractions(maf = mafs[['TCGA-KIRC']], top = 25, pvalue = c(0.05, 0.1))
+somaticInteractions(maf = mafs[['TCGA-UCEC']], top = 25, pvalue = c(0.05, 0.1))
+dev.off()
+
+
+prep_mutex_mat(mafs[['TCGA-KIRC']], "kirc_comut.csv")
+prep_mutex_mat(mafs[['TCGA-UCEC']], "ucec_comut.csv")
 

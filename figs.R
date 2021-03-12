@@ -2,11 +2,11 @@ library(dplyr)
 library(maftools)
 library(VennDiagram)
 library(reshape2)
-
+library(ggplot2)
 
 # https://drsimonj.svbtle.com/creating-corporate-colour-palettes-for-ggplot2
 ch_palettes <- list(
-  `flat` = viridis::cividis(30)[1:20],
+  `flat` = viridis::cividis(50)[1:40],
   `hl` = c("#d11141", viridis::cividis(50)[5:20])
 )
 
@@ -15,6 +15,27 @@ ch_pal <- function(palette = "hl", reverse = FALSE, ...) {
   if (reverse) pal <- rev(pal)
   colorRampPalette(pal, ...)
 }
+
+# TMB calculations
+med_tmb <- function(maf, captureSize = 50, logScale = TRUE){
+  # modified from maftools
+
+  if(!is(object = maf, class2 = "MAF")){
+    stop("Input must be an MAF object")
+  }
+
+  maf.mutload = getSampleSummary(maf)[,.(Tumor_Sample_Barcode, total)]
+  maf.mutload[,total_perMB := total/captureSize]
+  maf.mutload[,total_perMB_log := log10(total_perMB)]
+  maf.mutload = maf.mutload[order(total_perMB, decreasing = FALSE)]
+
+  medload = median(maf.mutload[,total_perMB], na.rm = TRUE)
+  return(medload)
+}
+
+# get Tumor_Sample_Barcode
+tsb <- function(m){ m@data$Tumor_Sample_Barcode }
+
 
 
 p_plots <- function(mutsig_p, cancer_names, main = 'Mutation frequency significance', pq = p){ 
@@ -115,7 +136,7 @@ p_plots <- function(mutsig_p, cancer_names, main = 'Mutation frequency significa
 		mutate(cancer = ordered(cancer, levels = rev(lvls))) %>%
 		ggplot(aes(fill=Gene, y=value, x=cancer)) + viz -> p3
 			
-	#dev.off()
+		#dev.off()
 	
 	
 	#png(file = '../plots_tmp/mutsig_gator1.png')
@@ -132,12 +153,19 @@ p_plots <- function(mutsig_p, cancer_names, main = 'Mutation frequency significa
 		ggplot(aes(fill=Gene, y=value, x=cancer)) + viz  -> p5
 	#dev.off()
 
+	#png(file = '../plots_tmp/other_nutrient_sensing.png')
+        df %>% 
+		subset(Gene %in% c("GATSL3", "C7orf60"))%>%
+		mutate(cancer = ordered(cancer, levels = rev(lvls))) %>%
+		ggplot(aes(fill=Gene, y=value, x=cancer)) + viz +
+		discrete_scale("fill", 'hl', palette = ch_pal('flat'), labels = c('CASTOR1', 'SAMTOR')) -> p6
+	#dev.off()               
 
 	print(p1)
 	print(p2)
 	print(p3)
 	print(p4)
-	print(p5)
+	print(p6)
 
 }
 
@@ -154,14 +182,14 @@ p_plots <- function(mutsig_p, cancer_names, main = 'Mutation frequency significa
 # 		
 # 
 # Venn (option)
-venn_pik3ca_pten_mtor <- function(m ='TCGA-KIRC', main = 'Mutation Co-occurance (n samples in cohort)'){
+venn_pik3ca_pten_mtor <- function(m, main = 'Mutation Co-occurance (n samples in cohort)'){
 	venn.diagram(
-	  x = list(tsb(subsetMaf(mafs[[m]], genes = c("PIK3CA"))), tsb(subsetMaf(mafs[[m]], genes = c("PTEN"))), tsb(subsetMaf(mafs[[m]], genes = c("MTOR"))) ),
-	  category.names = c("PIK3CA", "PTEN", "MTOR"),
+	  x = list(tsb(subsetMaf(m, genes = c("PIK3CA"))), tsb(subsetMaf(m, genes = c("PTEN"))), tsb(subsetMaf(m, genes = c("MTOR"))) ),
+	  category.names = c("MTOR", "PTEN", "PIK3CA"),
 	  filename = NULL,
 	  output = TRUE ,
-	  col=viridis(3),
-	  fill = alpha( viridis(3), 0.3 ),
+	  col=ch_pal('hl')(3),
+	  fill = alpha( ch_pal('hl')(3), 0.3 ),
 	  cex = 1,
 	  fontfamily = "sans",
 	  cat.cex = 1,
@@ -175,9 +203,8 @@ venn_pik3ca_pten_mtor <- function(m ='TCGA-KIRC', main = 'Mutation Co-occurance 
 }
 
 
-
 # TMB vs mtor alt frequency
-tmb_plot <- function(mutRates, cancer_names, show_na = T, main = "MTOR alterations not linear with absolute TMB"){
+tmb_plot <- function(mutRates, cancer_names, show_na = T, main = "MTOR alterations not linear with absolute TMB", do_labels = c('TCGA-KIRC', 'TCGA-COAD', 'TCGA-UCEC', 'TCGA-SKCM')){
 	cancer_names %>% 
 		mutate(med_TMB = unlist(lapply(mafs, med_tmb))[cancer_names$abbrev], 
 			   MTOR_alt_frac = mutRates['MTOR'][match(cancer_names$abbrev, rownames(mutRates)),]) -> df
@@ -186,20 +213,23 @@ tmb_plot <- function(mutRates, cancer_names, show_na = T, main = "MTOR alteratio
 		df %>%
 		ggplot(aes(x = MTOR_alt_frac, y = med_TMB)) + 
 			geom_point() +  
-			geom_text(aes(hjust=1.03,vjust=0.02,label=ifelse(cancer_names$abbrev %in% c('TCGA-KIRC', 'TCGA-COAD', 'TCGA-UCEC', 'TCGA-SKCM'),cancer_names$brief,''))) +
+			geom_text(aes(hjust=1.03,vjust=0.02,label=ifelse(cancer_names$abbrev %in% do_labels,cancer_names$brief,''))) +
 			labs(title= main, x = 'MTOR fraction of samples altered (%)', y = 'Median TMB/MB') +
-			geom_smooth(method = "lm", se=FALSE, color="grey", formula = y~x) +
+			geom_smooth(method = "lm", se=FALSE, color="black", formula = y~x) +
 			ggpmisc::stat_poly_eq(formula = y ~ x, parse = TRUE) +
 			theme_classic() + theme(legend.position = "none")
 }
+
+
 
 prep_mutex_mat <- function(maf, outfn){
 
   subset(maf@data, select = c('Hugo_Symbol', 'Tumor_Sample_Barcode')) %>% 
   	mutate(Tumor_Sample_Barcode = as.character(Tumor_Sample_Barcode)) %>%
   	dcast(Hugo_Symbol ~ Tumor_Sample_Barcode) %>%
-  	column_to_rownames('Hugo_Symbol') %>% 
+  	tibble() %>% tibble::column_to_rownames('Hugo_Symbol') %>% 
   	write.csv(outfn)
+
 }
 
 

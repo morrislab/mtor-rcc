@@ -1,3 +1,4 @@
+if(!file.exists('pcawgp.Rdata')){
 
 data_dir <- '~/data/pcawg-drivers/xchip/cga_home/gtiao/PCAWG/Oct_2016/final_integration_results_2017_03_16'
 fns <- list.files(data_dir)
@@ -18,3 +19,6 @@ for (c in pcawg_names) {
 }
 
 save(file = 'pcawgp.Rdata', pcawg_p, pcawg_b)
+
+} else{load('pcawgp.Rdata')}
+

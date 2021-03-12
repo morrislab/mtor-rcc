@@ -1,12 +1,13 @@
-if(!file.exists('pcawgp.Rdata')){
+
 
 data_dir <- '~/data/pcawg-drivers/xchip/cga_home/gtiao/PCAWG/Oct_2016/final_integration_results_2017_03_16'
 fns <- list.files(data_dir)
 
 pcawg_names <- gsub('.CDS.combined_p_values.automatic_method_removal.txt', '', fns)
 pcawg_names <- pcawg_names[!grepl('meta', pcawg_names) & !grepl('Pancan', pcawg_names)]
-pcawg_p <- pcawg_b <- data.frame(row.names = goi)
 
+if(!file.exists('pcawgp.Rdata')){
+pcawg_p <- pcawg_b <- data.frame(row.names = goi)
 # set up mutsig dataframe for genes of interest
 for (c in pcawg_names) {
   #ord <- match(c, gsub('.CDS.combined_p_values.automatic_method_removal.txt', '', fns))

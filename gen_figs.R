@@ -52,8 +52,6 @@ source('prep_pcawgp.R')
 
 source('figs.R')
 
-print('plotting')
-
 pdf('plots/cait_mutsig_p.pdf')
 p_plots(mutsig_p, cancer_names, main = 'MutSigCV p-values', pq = 'p')
 dev.off()
@@ -77,9 +75,8 @@ dev.off()
 
 pdf('plots/tmb_scatter.pdf')
 tmb_plot(mutRates, cancer_names, main = "MTOR Alterations not Linear with Absolute TMB")
-tmb_plot(mutRates[rownames(mutRates) != 'TCGA-SKCM',], cancer_names, main = "MTOR Alterations not Linear with Absolute TMB (Melanoma excluded)")
-tmb_plot(mutRates, cancer_names, show_na = F, "MTOR Alterations not Linear with Absolute TMB", do_labels =c('TCGA-KIRC', 'TCGA-COAD', 'TCGA-UCEC'))
-tmb_plot(mutRates[rownames(mutRates) != 'TCGA-SKCM',], show_na = F, cancer_names, "MTOR Alterations not Linear with Absolute TMB (Melanoma excluded)")
+tmb_plot(mutRates, cancer_names, main = "Same thing, more labels", do_labels = c('TCGA-KIRC', 'TCGA-COAD', 'TCGA-UCEC','TCGA-SKCM', 'TCGA-LUSC', 'TCGA-LUAD', 'TCGA-BLCA', 'TCGA-STAD'))
+tmb_plot(mutRates[rownames(mutRates) != 'TCGA-SKCM',], cancer_names[cancer_names$abbrev != 'TCGA-SKCM'], main = "MTOR Alterations not Linear with Absolute TMB (Melanoma excluded)")
 dev.off()
 
 
@@ -94,6 +91,6 @@ somaticInteractions(maf = mafs[['TCGA-UCEC']], genes = c('PTEN', 'PIK3CA', 'MTOR
 dev.off()
 
 
-prep_mutex_mat(mafs[['TCGA-KIRC']], "kirc_comut.csv")
-prep_mutex_mat(mafs[['TCGA-UCEC']], "ucec_comut.csv")
+prep_mutex_mat(mafs[['TCGA-KIRC']]) %>% write.csv("kirc_comut.csv")
+prep_mutex_mat(mafs[['TCGA-UCEC']]) %>% write.csv("ucec_comut.csv")
 

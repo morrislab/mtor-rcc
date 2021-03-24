@@ -34,7 +34,9 @@ if(!file.exists(data_dest)){
 fns <- untar(data_dest, list=TRUE)
 sel <- grepl(fns, pattern = "CDS.combined_p_values.automatic_method_removal.txt")
 #sel <- sel & grepl(fns, pattern = "Kidney-RCC|Panc-Endocrine|Uterus-AdenoCa|ColoRect-AdenoCa|Stomach-AdenoCa")
-untar(data_dest, files = fns[sel], exdir = path.expand(data_dir))
+for(f in fns[sel]){
+	if (!file.exists(file.path(data_dir,f))){untar(data_dest, files = f, exdir = path.expand(data_dir)) }
+}
 
 # cancer types
 cancer_names <- read.table('cancer_types.txt', header = T, sep = "\t")
@@ -75,8 +77,9 @@ dev.off()
 
 pdf('plots/tmb_scatter.pdf')
 tmb_plot(mutRates, cancer_names, main = "MTOR Alterations not Linear with Absolute TMB")
-tmb_plot(mutRates, cancer_names, main = "Same thing, more labels", do_labels = c('TCGA-KIRC', 'TCGA-COAD', 'TCGA-UCEC','TCGA-SKCM', 'TCGA-LUSC', 'TCGA-LUAD', 'TCGA-BLCA', 'TCGA-STAD'))
-tmb_plot(mutRates[rownames(mutRates) != 'TCGA-SKCM',], cancer_names[cancer_names$abbrev != 'TCGA-SKCM'], main = "MTOR Alterations not Linear with Absolute TMB (Melanoma excluded)")
+tmb_plot(mutRates, cancer_names, main = "MTOR Alterations not Linear with Absolute TMB", do_labels = c('TCGA-KIRC', 'TCGA-COAD', 'TCGA-UCEC','TCGA-SKCM', 'TCGA-LUSC', 'TCGA-LUAD', 'TCGA-BLCA', 'TCGA-STAD'))
+tmb_plot(mutRates[rownames(mutRates) != 'TCGA-SKCM',], cancer_names[cancer_names$abbrev != 'TCGA-SKCM',], main = "MTOR Alterations not Linear with Absolute TMB (Melanoma excluded)")
+tmb_plot(mutRates[rownames(mutRates) != 'TCGA-SKCM',], cancer_names[cancer_names$abbrev != 'TCGA-SKCM',], main = "MTOR Alterations not Linear with Absolute TMB (Melanoma excluded)", , do_labels = c('TCGA-KIRC', 'TCGA-COAD', 'TCGA-UCEC','TCGA-LUSC', 'TCGA-LUAD', 'TCGA-BLCA'))
 dev.off()
 
 
@@ -84,13 +87,13 @@ pdf('plots/co-mut_venns.pdf')
 venn_pik3ca_pten_mtor(mafs[['TCGA-KIRC']], main = 'Kidney RCC Mutation Co-occurance (n samples in cohort)')
 grid.newpage()
 venn_pik3ca_pten_mtor(mafs[['TCGA-UCEC']], main = 'Kidney RCC Mutation Co-occurance (n samples in cohort)')
-somaticInteractions(maf = mafs[['TCGA-KIRC']], top = 25, pvalue = c(0.05, 0.1))
-somaticInteractions(maf = mafs[['TCGA-UCEC']], top = 25, pvalue = c(0.05, 0.1))
-somaticInteractions(maf = mafs[['TCGA-KIRC']], genes = c('PTEN', 'PIK3CA', 'MTOR'), pvalue = c(0.05, 0.1))
-somaticInteractions(maf = mafs[['TCGA-UCEC']], genes = c('PTEN', 'PIK3CA', 'MTOR'), pvalue = c(0.05, 0.1))
+#somaticInteractions(maf = mafs[['TCGA-KIRC']], top = 25, pvalue = c(0.05, 0.1))
+#somaticInteractions(maf = mafs[['TCGA-UCEC']], top = 25, pvalue = c(0.05, 0.1))
+#somaticInteractions(maf = mafs[['TCGA-KIRC']], genes = c('PTEN', 'PIK3CA', 'MTOR'), pvalue = c(0.05, 0.1))
+#somaticInteractions(maf = mafs[['TCGA-UCEC']], genes = c('PTEN', 'PIK3CA', 'MTOR'), pvalue = c(0.05, 0.1))
 dev.off()
 
 
-prep_mutex_mat(mafs[['TCGA-KIRC']]) %>% write.csv("kirc_comut.csv")
-prep_mutex_mat(mafs[['TCGA-UCEC']]) %>% write.csv("ucec_comut.csv")
+#prep_mutex_mat(mafs[['TCGA-KIRC']]) %>% write.csv("kirc_comut.csv")
+#prep_mutex_mat(mafs[['TCGA-UCEC']]) %>% write.csv("ucec_comut.csv")
 

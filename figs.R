@@ -165,6 +165,7 @@ p_plots <- function(mutsig_p, cancer_names, main = 'Mutation frequency significa
 	print(p2)
 	print(p3)
 	print(p4)
+	print(p5)
 	print(p6)
 
 }
@@ -201,7 +202,7 @@ tmb_plot <- function(mutRates, cancer_names, show_na = T, main = "MTOR alteratio
 		df %>%
 		ggplot(aes(x = MTOR_alt_frac, y = med_TMB)) + 
 			geom_point() +  
-			geom_text(aes(hjust=1.03,vjust=0.02,label=ifelse(cancer_names$abbrev %in% do_labels,cancer_names$brief,''))) +
+			geom_text(aes(hjust=1.04,vjust=-0.5,label=ifelse(cancer_names$abbrev %in% do_labels,cancer_names$brief,''))) +
 			labs(title= main, x = 'MTOR fraction of samples altered (%)', y = 'Median TMB/MB') +
 			geom_smooth(method = "lm", formula = y~x, se=FALSE, colour="black", weight = 0.7) +
 			ggpmisc::stat_poly_eq(formula = y ~ x, parse = TRUE) +

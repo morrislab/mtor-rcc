@@ -166,6 +166,7 @@ def main():
     parser.add_argument('outfn', type=str, help='result destination file')
     parser.add_argument('--logfn', type=str, help='log file')
     parser.add_argument('--latex', action='store_true')
+    parser.add_argument('--md', action='store_true')
     args = parser.parse_args()
 
     if(args.logfn): logging.basicConfig(filename=args.logfn, level=logging.DEBUG)
@@ -178,9 +179,12 @@ def main():
     df = pd.DataFrame.from_records([r.__dict__ for r in result_list])
     
     if(args.latex):
-        with open(f'{args.outfn}.tex', 'w') as f: f.write(tabulate(df, tablefmt = 'latex_booktabs', floatfmt=".2f") )
+        with open(f'{args.outfn}.txt', 'a') as f: f.write(tabulate(df, tablefmt = 'latex_booktabs', floatfmt=".2f") + "\n" )
+
+    if(args.latex):
+        with open(f'{args.outfn}.txt', 'a') as f: f.write(tabulate(df, tablefmt = 'github', floatfmt=".2f") + "\n")
    
-    df.to_csv(args.outfn)
+    df.to_csv(f'{args.outfn}.csv')
 
 if __name__ == '__main__':
     main()

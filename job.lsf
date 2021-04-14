@@ -1,12 +1,12 @@
 #!/bin/bash
 #BSUB -J cpu-job
-#BSUB -W 02:00
-#BSUB -n 20
+#BSUB -W 03:00
+#BSUB -n 30
 #BSUB -R rusage[mem=8]
 #BSUB -q cpuqueue
 #BSUB -e .bsub_lastjob.err
 #BSUB -o .bsub_lastjob.out
 
 
-python mutex.py kirc_comut.csv 100 kirc.mutex --latex
-python mutex.py ucec_comut.csv 100 ucec.mutex --latex
+python mutex.py kirc_comut.csv 10000 kirc.mutex --latex --md
+python mutex.py ucec_comut.csv 10000 ucec.mutex --latex --md

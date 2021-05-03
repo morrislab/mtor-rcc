@@ -107,9 +107,9 @@ p_plots <- function(mutsig_p, cancer_names, main = 'Mutation frequency significa
 		ggplot(aes(fill=Gene, x=value, y=cancer)) + 
 			geom_bar(position="dodge", stat="identity") +
 			geom_vline(xintercept = -log10(0.05), size=0.2, linetype="dashed") +
-			annotate('text', y = 1, x = 1.7, label = 'p = 0.05', size = 3.5) +
+			annotate('text', y = 1, x = 1.7, label = paste0(pq, ' = 0.05'), size = 3.5) +
 			geom_vline(xintercept = -log10(0.001), size=0.2, linetype="dashed") +
-			annotate('text', y = 1, x = 3.5, label = 'p = 0.001', size = 3.5) +
+			annotate('text', y = 1, x = 3.5, label = paste0(pq, ' = 0.001'), size = 3.5) +
 			labs(title= main, y = '', x = xlab ) + 
 			#scale_fill_viridis(discrete = T, direction = -1, option = "E", end = 0.8) +
 			discrete_scale("fill", 'hl', palette = ch_pal('flat')) +
@@ -120,9 +120,9 @@ p_plots <- function(mutsig_p, cancer_names, main = 'Mutation frequency significa
 
 	viz <- list(geom_bar(position="dodge", stat="identity"),
 				geom_hline(yintercept = -log10(0.05), size=0.3, linetype="dashed"),
-				annotate('text', x = 1, y = 1.75, label = 'p = 0.05', size = 3.5),
+				annotate('text', x = 1, y = 1.75, label = paste0(pq, ' = 0.05'), size = 3.5),
 				geom_hline(yintercept = -log10(0.001), size=0.3, linetype="dashed"),
-				annotate('text', x = 1, y = 3.5, label = 'p = 0.001', size = 3.5),
+				annotate('text', x = 1, y = 3.5, label = paste0(pq, ' = 0.001'), size = 3.5),
 				labs(title= main, x = '', y = xlab ),
 				discrete_scale("fill", 'hl', palette = ch_pal('flat')),
 				coord_flip(), theme_classic(), ylim(0, 5),
@@ -170,19 +170,29 @@ p_plots <- function(mutsig_p, cancer_names, main = 'Mutation frequency significa
 
 }
 
+# bonferroni correct pvalues
+bonferroni <- function(p_mat, axis=1){
+    p_mat <- p_mat * dim(p_mat)[axis]
+    p_mat[p_mat >1] <- 1
+    return(p_mat)
+}
+
 
 # Venn 
+overrideTriple = T
 venn_pik3ca_pten_mtor <- function(m, main = 'Mutation Co-occurance (n samples in cohort)'){
 	venn.diagram(
 	  x = list(tsb(subsetMaf(m, genes = c("PIK3CA"))), tsb(subsetMaf(m, genes = c("PTEN"))), tsb(subsetMaf(m, genes = c("MTOR"))) ),
-	  category.names = c("MTOR", "PTEN", "PIK3CA"),
+	  category.names = c("PIK3CA", "PTEN", "MTOR"),
 	  filename = NULL,
 	  output = TRUE ,
 	  col=ch_pal('hl')(3),
 	  fill = alpha( ch_pal('hl')(3), 0.3 ),
-	  cex = 1,
+	  cex = 3,
+	  ext.text = T,
+	  ext.percent = c(0.9, 0.9, 0.9),
 	  fontfamily = "sans",
-	  cat.cex = 1,
+	  cat.cex = 3,
 	  cat.default.pos = "outer",
 	  cat.pos = c(-27, 27, 135),
 	  cat.dist = c(0.04, 0.04, 0.04),

@@ -55,6 +55,10 @@ source('prep_pcawgp.R')
 source('figs.R')
 
 pdf('plots/cait_mutsig_p.pdf')
+p_plots(bonferroni(mutsig_p, axis=2), cancer_names, main = 'MutSigCV p-values', pq = 'p')
+dev.off()
+
+pdf('plots/cait_mutsig_p.pdf')
 p_plots(mutsig_p, cancer_names, main = 'MutSigCV p-values', pq = 'p')
 dev.off()
 

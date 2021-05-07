@@ -5,6 +5,7 @@ library(reshape2)
 library(ggplot2)
 library(readr)
 library(tibble)
+library(stringr)
 
 # https://drsimonj.svbtle.com/creating-corporate-colour-palettes-for-ggplot2
 ch_palettes <- list(
@@ -76,9 +77,9 @@ is.driver <- function(str){
 mut_venn <- function(df, cex = 2, cat.dist = c(0.06, 0.06, 0.06), cat.pos = c(-27, 27, 135),
                      main = ''){
   venn.diagram(
-      x = list(colnames(df)[unlist(df[rownames(df) == 'PIK3CA',])],
-               colnames(df)[unlist(df[rownames(df) == 'PTEN',])],
-               colnames(df)[unlist(df[rownames(df) == 'MTOR',])]),
+      x = list(colnames(df)[as.logical(colSums(df[grepl('PIK3CA', rownames(df)),])) ],
+               colnames(df)[as.logical(colSums(df[grepl('PTEN', rownames(df)),])) ],
+               colnames(df)[as.logical(colSums(df[grepl('MTOR', rownames(df)),])) ]),
       category.names = c("PIK3CA", "PTEN", "MTOR"),
       filename = NULL,
       output = TRUE ,
@@ -93,7 +94,7 @@ mut_venn <- function(df, cex = 2, cat.dist = c(0.06, 0.06, 0.06), cat.pos = c(-2
       cat.dist = cat.dist,
       cat.fontfamily = "sans",
       rotation = 1,
-      main = main,
+      main = paste0(main, " (n=", sum(colSums(df)>0), ")"),
       main.cex = 1,
       main.fontfamily = 'sans'
   ) %>% grid.draw()

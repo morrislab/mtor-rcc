@@ -115,32 +115,35 @@ grid.newpage()
 pushViewport(viewport(width=unit(0.8, "npc"), height = unit(0.8, "npc")))
 
 read_tsv('kirc_PATIENT_DATA_oncoprint.tsv', skip_empty_rows = F) %>%
-    subset(track_type == 'MUTATIONS') %>%
-    select(-track_type) %>%
-    column_to_rownames('track_name') %>%
+    subset(track_type != 'STRUCTURAL_VARIANT') %>%
+    mutate(track = str_c(track_name, '_', track_type)) %>%
+    select(-c(track_name, track_type)) %>%
+    column_to_rownames('track') %>%
     mutate(across(everything(), ~!is.na(.x))) %>%
-    mut_venn(main = 'RCCC patients with any mutation (n=48)',cat.dist = c(0.06, 0.06, 0.03))
+    mut_venn(main = 'RCCC patients with any alteration', cat.dist = c(0.06, 0.06, 0.03), cat.pos = c(0, 0, 0))
 
 grid.newpage()
 pushViewport(viewport(width=unit(0.8, "npc"), height = unit(0.8, "npc")))
 
 read_tsv('ucec_PATIENT_DATA_oncoprint.tsv', skip_empty_rows = F) %>%
-    subset(track_type == 'MUTATIONS') %>%
-    select(-track_type) %>%
-    column_to_rownames('track_name') %>%
+    subset(track_type != 'STRUCTURAL_VARIANT') %>%
+    mutate(track = str_c(track_name, '_', track_type)) %>%
+    select(-c(track_name, track_type)) %>%
+    column_to_rownames('track') %>%
     mutate(across(everything(), ~!is.na(.x))) %>%
-    mut_venn(main = 'Endometrial carcinoma patients with any mutation (n=406)', cex = c(2,2,2,1,1.7,2,2))
+    mut_venn(main = 'Endometrial carcinoma patients with any alteration', cex = c(2,2,2,0.9,1.7,2,2), cat.pos = c(-27, 27, 180))
 
 grid.newpage()
 pushViewport(viewport(width=unit(0.8, "npc"), height = unit(0.8, "npc")))
 
 rm(overrideTriple)
 read_tsv('ucec_PATIENT_DATA_oncoprint.tsv', skip_empty_rows = F) %>%
-    subset(track_type == 'MUTATIONS') %>%
-    select(-track_type) %>%
-    column_to_rownames('track_name') %>%
+    subset(track_type != 'STRUCTURAL_VARIANT') %>%
+    mutate(track = str_c(track_name, '_', track_type)) %>%
+    select(-c(track_name, track_type)) %>%
+    column_to_rownames('track') %>%
     mutate(across(everything(), ~!is.na(.x))) %>%
-    mut_venn(main = 'Endometrial carcinoma patients with any mutation (n=406)', cex = 2)
+    mut_venn(main = 'Endometrial carcinoma patients with any alteration', cat.pos = c(-27, 27, 180))
 
 
 # Venn for putative drivers only
@@ -148,21 +151,23 @@ grid.newpage()
 pushViewport(viewport(width=unit(0.8, "npc"), height = unit(0.8, "npc")))
 
 read_tsv('kirc_PATIENT_DATA_oncoprint.tsv', skip_empty_rows = F) %>%
-    subset(track_type == 'MUTATIONS') %>%
-    select(-track_type) %>%
-    column_to_rownames('track_name') %>%
+    subset(track_type != 'STRUCTURAL_VARIANT') %>%
+    mutate(track = str_c(track_name, '_', track_type)) %>%
+    select(-c(track_name, track_type)) %>%
+    column_to_rownames('track') %>%
     mutate(across(everything(), ~is.driver(.x))) %>%
-    mut_venn(main = 'RCCC patients with driver mutations (n=35)')
+    mut_venn(main = 'RCCC patients with driver alterations', cat.dist = c(0.06, 0.06, 0.06), cat.pos = c(-27, 70, 180))
 
 grid.newpage()
 pushViewport(viewport(width=unit(0.8, "npc"), height = unit(0.8, "npc")))
 
 read_tsv('ucec_PATIENT_DATA_oncoprint.tsv', skip_empty_rows = F) %>%
-    subset(track_type == 'MUTATIONS') %>%
-    select(-track_type) %>%
-    column_to_rownames('track_name') %>%
+    subset(track_type != 'STRUCTURAL_VARIANT') %>%
+    mutate(track = str_c(track_name, '_', track_type)) %>%
+    select(-c(track_name, track_type)) %>%
+    column_to_rownames('track') %>%
     mutate(across(everything(), ~is.driver(.x))) %>%
-    mut_venn(main = 'Endometrial carcinoma patients with any mutations (n=391)', 
+    mut_venn(main = 'Endometrial carcinoma patients with driver alterations', 
              cat.dist = c(0.08, 0.06, 0.06), cat.pos = c(-27, 27, 0))
 
 dev.off()

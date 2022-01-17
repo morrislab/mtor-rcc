@@ -1,0 +1,13 @@
+abbrev	brief	name
+TCGA-COAD.GI.CIN	Colon CN loss	Colon chromosome instability
+TCGA-KIRC.KIRC.2	Kidney RCC m2	Kidney RCC m2
+TCGA-UCEC.UCEC.CN_LOW	Endometrial CN low	Endromerioid CN 1 or 2
+TCGA-COAD.GI.GS	Colon CN stable	Colon genome stable
+TCGA-KIRC.KIRC.3	Kidney RCC m3	Kidney RCC m3
+TCGA-UCEC.UCEC.MSI	Endometrial MSI	Endometrial hypermutated MSI
+TCGA-COAD.GI.HM-SNV	Colon POLE	Colon hypermutated POLE
+TCGA-KIRC.KIRC.4	Kidney RCC m4	Kidney RCC m4
+TCGA-COAD.GI.MSI	Colon MSI	Colon hypermutated MSI
+TCGA-UCEC.UCEC.POLE	Endometrial POLE	Endometrial hypermutated POLE
+TCGA-KIRC.KIRC.1	Kidney RCC m1	Kidney RCC m1
+TCGA-UCEC.UCEC.CN_HIGH	Endometrial CN high	Endometrial serious-like CN 3 or 4

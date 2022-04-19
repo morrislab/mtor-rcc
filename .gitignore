@@ -1,0 +1,15 @@
+.snakemake
+# MutSigCV dependencies
+MutSigCV_1.41/
+v901/
+ref_files/chr_files_GRC38/
+ref_files/chr_files_hg19/
+ref_files/exome_full192.coverage.txt
+ref_files/gene.covariates.txt
+ref_files/mutation_type_dictionary_file.txt
+ref_files/sample_matrix.txt
+# Analysis files
+data/
+logs/
+mutsigcv_results/
+plots/
